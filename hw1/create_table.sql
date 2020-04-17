@@ -32,7 +32,7 @@ create table teamban (
 );
 
 create table stat (
-  player_id int,
+  player_id int not null,
   win boolean,
   item1 smallint,
   item2 smallint,
@@ -50,7 +50,8 @@ create table stat (
   pentakills tinyint,
   legendarykills tinyint,
   goldearned mediumint,
-  firstblood boolean
+  firstblood boolean,
+  primary key (player_id)
 );
 
 load data local infile './champs.csv'
