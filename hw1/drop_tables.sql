@@ -1,5 +1,5 @@
-drop champ;
-drop match_info;
-drop participant;
-drop teamban;
-drop stat;
+drop table champ;
+drop table match_info;
+drop table participant;
+drop table teamban;
+drop table stat;
