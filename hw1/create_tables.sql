@@ -72,7 +72,7 @@ load data local infile './participants.csv'
 into table participant
 fields terminated by ','
 enclosed by '"'
-lines terminated by '\r\n'
+lines terminated by '\n'
 ignore 1 lines;
 
 load data local infile './teambans.csv'
