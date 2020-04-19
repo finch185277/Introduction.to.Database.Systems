@@ -32,4 +32,5 @@ from (
     )
   ) as pr
   group by version
-) as prr;
+) as prr
+order by version;
