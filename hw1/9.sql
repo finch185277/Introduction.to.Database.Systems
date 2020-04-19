@@ -1,4 +1,4 @@
-select prr.version, prr.win_cnt, prr.lose_cnt, prr.win_cnt / prr.lose_cnt as win_ratio
+select prr.version, prr.win_cnt, prr.lose_cnt, prr.win_cnt / (prr.win_cnt + prr.lose_cnt) as win_ratio
 from (
   select pr.version as version, sum(pr.win_cnt) as win_cnt, sum(pr.lose_cnt) as lose_cnt
   from
