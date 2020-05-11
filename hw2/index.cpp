@@ -24,7 +24,7 @@ void Index::search(int x) {
   // search logic
   if (root == NULL) {
     // empty
-    cout << "Tree empty\n";
+    // cout << "Tree empty\n";
   } else {
     Node *cursor = root;
     // in the following while loop, cursor will travel to the leaf node possibly
@@ -44,11 +44,11 @@ void Index::search(int x) {
     // in the following for loop, we search for the key if it exists
     for (int i = 0; i < cursor->size; i++) {
       if (cursor->key[i] == x) {
-        cout << "Found\n";
+        // cout << "Found\n";
         return;
       }
     }
-    cout << "Not found\n";
+    // cout << "Not found\n";
   }
 }
 
@@ -249,7 +249,7 @@ Node *Index::findParent(Node *cursor, Node *child) {
 void Index::remove(int x) {
   // delete logic
   if (root == NULL) {
-    cout << "Tree empty\n";
+    // cout << "Tree empty\n";
   } else {
     Node *cursor = root;
     Node *parent;
@@ -288,7 +288,7 @@ void Index::remove(int x) {
     }
     if (!found) // if key does not exist in that leaf node
     {
-      cout << "Not found\n";
+      // cout << "Not found\n";
       return;
     }
     // deleting the key
@@ -298,13 +298,13 @@ void Index::remove(int x) {
     cursor->size--;
     if (cursor == root) // if it is root node, then make all pointers NULL
     {
-      cout << "Deleted " << x << " from leaf node successfully\n";
+      // cout << "Deleted " << x << " from leaf node successfully\n";
       for (int i = 0; i < MAX + 1; i++) {
         cursor->ptr[i] = NULL;
       }
       if (cursor->size == 0) // if all keys are deleted
       {
-        cout << "Tree died\n";
+        // cout << "Tree died\n";
         delete[] cursor->key;
         delete[] cursor->ptr;
         delete cursor;
@@ -314,12 +314,12 @@ void Index::remove(int x) {
     }
     cursor->ptr[cursor->size] = cursor->ptr[cursor->size + 1];
     cursor->ptr[cursor->size + 1] = NULL;
-    cout << "Deleted " << x << " from leaf node successfully\n";
+    // cout << "Deleted " << x << " from leaf node successfully\n";
     if (cursor->size >= (MAX + 1) / 2) // no underflow
     {
       return;
     }
-    cout << "Underflow in leaf node!\n";
+    // cout << "Underflow in leaf node!\n";
     // underflow condition
     // first we try to transfer a key from sibling node
     // check if left sibling exists
@@ -343,8 +343,8 @@ void Index::remove(int x) {
         leftNode->ptr[leftNode->size + 1] = NULL;
         // update parent
         parent->key[leftSibling] = cursor->key[0];
-        cout << "Transferred " << cursor->key[0]
-             << " from left sibling of leaf node\n";
+        // cout << "Transferred " << cursor->key[0]
+        //      << " from left sibling of leaf node\n";
         return;
       }
     }
@@ -369,8 +369,8 @@ void Index::remove(int x) {
         }
         // update parent
         parent->key[rightSibling - 1] = rightNode->key[0];
-        cout << "Transferred " << cursor->key[cursor->size - 1]
-             << " from right sibling of leaf node\n";
+        // cout << "Transferred " << cursor->key[cursor->size - 1]
+        //      << " from right sibling of leaf node\n";
         return;
       }
     }
@@ -386,7 +386,7 @@ void Index::remove(int x) {
       leftNode->ptr[leftNode->size] = NULL;
       leftNode->size += cursor->size;
       leftNode->ptr[leftNode->size] = cursor->ptr[cursor->size];
-      cout << "Merging two leaf nodes\n";
+      // cout << "Merging two leaf nodes\n";
       removeInternal(parent->key[leftSibling], parent,
                      cursor); // delete parent node key
       delete[] cursor->key;
@@ -402,7 +402,7 @@ void Index::remove(int x) {
       cursor->ptr[cursor->size] = NULL;
       cursor->size += rightNode->size;
       cursor->ptr[cursor->size] = rightNode->ptr[rightNode->size];
-      cout << "Merging two leaf nodes\n";
+      // cout << "Merging two leaf nodes\n";
       removeInternal(parent->key[rightSibling - 1], parent,
                      rightNode); // delete parent node key
       delete[] rightNode->key;
@@ -426,7 +426,7 @@ void Index::removeInternal(int x, Node *cursor, Node *child) {
         delete[] cursor->key;
         delete[] cursor->ptr;
         delete cursor;
-        cout << "Changed root node\n";
+        // cout << "Changed root node\n";
         return;
       } else if (cursor->ptr[0] == child) {
         delete[] child->key;
@@ -436,7 +436,7 @@ void Index::removeInternal(int x, Node *cursor, Node *child) {
         delete[] cursor->key;
         delete[] cursor->ptr;
         delete cursor;
-        cout << "Changed root node\n";
+        // cout << "Changed root node\n";
         return;
       }
     }
@@ -462,10 +462,10 @@ void Index::removeInternal(int x, Node *cursor, Node *child) {
   cursor->size--;
   if (cursor->size >= (MAX + 1) / 2 - 1) // no underflow
   {
-    cout << "Deleted " << x << " from internal node successfully\n";
+    // cout << "Deleted " << x << " from internal node successfully\n";
     return;
   }
-  cout << "Underflow in internal node!\n";
+  // cout << "Underflow in internal node!\n";
   // underflow, try to transfer first
   if (cursor == root)
     return;
@@ -501,8 +501,8 @@ void Index::removeInternal(int x, Node *cursor, Node *child) {
       cursor->ptr[0] = leftNode->ptr[leftNode->size];
       cursor->size++;
       leftNode->size--;
-      cout << "Transferred " << cursor->key[0]
-           << " from left sibling of internal node\n";
+      // cout << "Transferred " << cursor->key[0]
+      //      << " from left sibling of internal node\n";
       return;
     }
   }
@@ -525,8 +525,8 @@ void Index::removeInternal(int x, Node *cursor, Node *child) {
       }
       cursor->size++;
       rightNode->size--;
-      cout << "Transferred " << cursor->key[0]
-           << " from right sibling of internal node\n";
+      // cout << "Transferred " << cursor->key[0]
+      //      << " from right sibling of internal node\n";
       return;
     }
   }
@@ -546,7 +546,7 @@ void Index::removeInternal(int x, Node *cursor, Node *child) {
     cursor->size = 0;
     // delete cursor
     removeInternal(parent->key[leftSibling], parent, cursor);
-    cout << "Merged with left sibling\n";
+    // cout << "Merged with left sibling\n";
 
   } else if (rightSibling <= parent->size) {
     // cursor + parent key + rightnode
@@ -563,7 +563,7 @@ void Index::removeInternal(int x, Node *cursor, Node *child) {
     rightNode->size = 0;
     // delete cursor
     removeInternal(parent->key[rightSibling - 1], parent, rightNode);
-    cout << "Merged with right sibling\n";
+    // cout << "Merged with right sibling\n";
   }
 }
 
@@ -571,9 +571,9 @@ void Index::display(Node *cursor) {
   // depth first display
   if (cursor != NULL) {
     for (int i = 0; i < cursor->size; i++) {
-      cout << cursor->key[i] << " ";
+      // cout << cursor->key[i] << " ";
     }
-    cout << "\n";
+    // cout << "\n";
     if (cursor->IS_LEAF != true) {
       for (int i = 0; i < cursor->size + 1; i++) {
         display(cursor->ptr[i]);
@@ -593,7 +593,7 @@ void Index::cleanUp(Node *cursor) {
       }
     }
     for (int i = 0; i < cursor->size; i++) {
-      cout << "Deleted key from memory: " << cursor->key[i] << "\n";
+      // cout << "Deleted key from memory: " << cursor->key[i] << "\n";
     }
     delete[] cursor->key;
     delete[] cursor->ptr;
