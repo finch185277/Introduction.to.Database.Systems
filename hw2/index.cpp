@@ -4,20 +4,20 @@ using namespace std;
 
 int MAX; // size of each node
 
-class BPTree; // self explanatory classes
+class Index; // self explanatory classes
 
 class Node {
 private:
   bool IS_LEAF;
   int *key, size;
   Node **ptr;
-  friend class BPTree;
+  friend class Index;
 
 public:
   Node();
 };
 
-class BPTree {
+class Index {
 private:
   Node *root;
   void insertInternal(int, Node *, Node *);
@@ -25,14 +25,14 @@ private:
   Node *findParent(Node *, Node *);
 
 public:
-  BPTree();
+  Index();
   void search(int);
   void insert(int);
   void remove(int);
   void display(Node *);
   Node *getRoot();
   void cleanUp(Node *);
-  ~BPTree();
+  ~Index();
 };
 
 Node::Node() {
@@ -41,9 +41,9 @@ Node::Node() {
   ptr = new Node *[MAX + 1];
 }
 
-BPTree::BPTree() { root = NULL; }
+Index::Index() { root = NULL; }
 
-void BPTree::search(int x) {
+void Index::search(int x) {
   // search logic
   if (root == NULL) {
     // empty
@@ -75,7 +75,7 @@ void BPTree::search(int x) {
   }
 }
 
-void BPTree::insert(int x) {
+void Index::insert(int x) {
   // insert logic
   if (root == NULL) {
     root = new Node;
@@ -171,7 +171,7 @@ void BPTree::insert(int x) {
   }
 }
 
-void BPTree::insertInternal(int x, Node *cursor, Node *child) {
+void Index::insertInternal(int x, Node *cursor, Node *child) {
   if (cursor->size < MAX) {
     // if cursor is not full
     // find the correct position for new key
@@ -248,7 +248,7 @@ void BPTree::insertInternal(int x, Node *cursor, Node *child) {
   }
 }
 
-Node *BPTree::findParent(Node *cursor, Node *child) {
+Node *Index::findParent(Node *cursor, Node *child) {
   // finds parent using depth first traversal and ignores leaf nodes as they
   // cannot be parents also ignores second last level because we will never find
   // parent of a leaf node during insertion using this function
@@ -269,7 +269,7 @@ Node *BPTree::findParent(Node *cursor, Node *child) {
   return parent;
 }
 
-void BPTree::remove(int x) {
+void Index::remove(int x) {
   // delete logic
   if (root == NULL) {
     cout << "Tree empty\n";
@@ -435,7 +435,7 @@ void BPTree::remove(int x) {
   }
 }
 
-void BPTree::removeInternal(int x, Node *cursor, Node *child) {
+void Index::removeInternal(int x, Node *cursor, Node *child) {
   // deleting the key x first
   // checking if key from root is to be deleted
   if (cursor == root) {
@@ -590,7 +590,7 @@ void BPTree::removeInternal(int x, Node *cursor, Node *child) {
   }
 }
 
-void BPTree::display(Node *cursor) {
+void Index::display(Node *cursor) {
   // depth first display
   if (cursor != NULL) {
     for (int i = 0; i < cursor->size; i++) {
@@ -605,9 +605,9 @@ void BPTree::display(Node *cursor) {
   }
 }
 
-Node *BPTree::getRoot() { return root; }
+Node *Index::getRoot() { return root; }
 
-void BPTree::cleanUp(Node *cursor) {
+void Index::cleanUp(Node *cursor) {
   // clean up logic
   if (cursor != NULL) {
     if (cursor->IS_LEAF != true) {
@@ -624,7 +624,7 @@ void BPTree::cleanUp(Node *cursor) {
   }
 }
 
-BPTree::~BPTree() {
+Index::~Index() {
   // calling cleanUp routine
   cleanUp(root);
 }
