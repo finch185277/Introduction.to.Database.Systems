@@ -3,38 +3,7 @@
 
 using namespace std;
 
-int MAX; // size of each node
-
-class Index; // self explanatory classes
-
-class Node {
-private:
-  bool IS_LEAF;
-  int *key, size;
-  Node **ptr;
-  friend class Index;
-
-public:
-  Node();
-};
-
-class Index {
-private:
-  Node *root;
-  void insertInternal(int, Node *, Node *);
-  void removeInternal(int, Node *, Node *);
-  Node *findParent(Node *, Node *);
-
-public:
-  Index();
-  void search(int);
-  void insert(int);
-  void remove(int);
-  void display(Node *);
-  Node *getRoot();
-  void cleanUp(Node *);
-  ~Index();
-};
+int MAX = 6; // size of each node
 
 Node::Node() {
   // dynamic memory allocation
@@ -43,6 +12,13 @@ Node::Node() {
 }
 
 Index::Index() { root = NULL; }
+
+Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
+  root = NULL;
+  for (int i = 0; i < num_rows; i++) {
+    this->insert(key.at(i));
+  }
+}
 
 void Index::search(int x) {
   // search logic
@@ -83,7 +59,7 @@ void Index::insert(int x) {
     root->key[0] = x;
     root->IS_LEAF = true;
     root->size = 1;
-    cout << "Created root\nInserted " << x << " successfully\n";
+    // cout << "Created root\nInserted " << x << " successfully\n";
   } else {
     Node *cursor = root;
     Node *parent;
@@ -117,10 +93,10 @@ void Index::insert(int x) {
       cursor->size++;
       cursor->ptr[cursor->size] = cursor->ptr[cursor->size - 1];
       cursor->ptr[cursor->size - 1] = NULL;
-      cout << "Inserted " << x << " successfully\n";
+      // cout << "Inserted " << x << " successfully\n";
     } else {
-      cout << "Inserted " << x << " successfully\n";
-      cout << "Overflow in leaf node!\nSplitting leaf node\n";
+      // cout << "Inserted " << x << " successfully\n";
+      // cout << "Overflow in leaf node!\nSplitting leaf node\n";
       // overflow condition
       // create new leaf node
       Node *newLeaf = new Node;
@@ -163,7 +139,7 @@ void Index::insert(int x) {
         newRoot->IS_LEAF = false;
         newRoot->size = 1;
         root = newRoot;
-        cout << "Created new root\n";
+        // cout << "Created new root\n";
       } else {
         // insert new key in parent node
         insertInternal(newLeaf->key[0], parent, newLeaf);
@@ -189,10 +165,10 @@ void Index::insertInternal(int x, Node *cursor, Node *child) {
     cursor->key[i] = x;
     cursor->size++;
     cursor->ptr[i + 1] = child;
-    cout << "Inserted key in an Internal node successfully\n";
+    // cout << "Inserted key in an Internal node successfully\n";
   } else {
-    cout << "Inserted key in an Internal node successfully\n";
-    cout << "Overflow in internal node!\nSplitting internal node\n";
+    // cout << "Inserted key in an Internal node successfully\n";
+    // cout << "Overflow in internal node!\nSplitting internal node\n";
     // if overflow in internal node
     // create new internal node
     Node *newInternal = new Node;
@@ -239,7 +215,7 @@ void Index::insertInternal(int x, Node *cursor, Node *child) {
       newRoot->IS_LEAF = false;
       newRoot->size = 1;
       root = newRoot;
-      cout << "Created new root\n";
+      // cout << "Created new root\n";
     } else {
       // recursion
       // find depth first search to find parent of cursor
@@ -623,6 +599,11 @@ void Index::cleanUp(Node *cursor) {
     delete[] cursor->ptr;
     delete cursor;
   }
+}
+
+void Index::clear_index() {
+  // calling cleanUp routine
+  cleanUp(root);
 }
 
 Index::~Index() {

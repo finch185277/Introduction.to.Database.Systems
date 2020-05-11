@@ -9,17 +9,37 @@
 
 using namespace std;
 
-class Node;
-class Index;
+class Index; // self explanatory classes
 
-void Index::search(int x);
-void Index::insert(int x);
-void Index::insertInternal(int x, Node *cursor, Node *child);
-Node *Index::findParent(Node *cursor, Node *child);
-void Index::remove(int x);
-void Index::removeInternal(int x, Node *cursor, Node *child);
-void Index::display(Node *cursor);
-Node *Index::getRoot();
-void Index::cleanUp(Node *cursor);
+class Node {
+private:
+  bool IS_LEAF;
+  int *key, size;
+  Node **ptr;
+  friend class Index;
+
+public:
+  Node();
+};
+
+class Index {
+private:
+  Node *root;
+  void insertInternal(int, Node *, Node *);
+  void removeInternal(int, Node *, Node *);
+  Node *findParent(Node *, Node *);
+
+public:
+  Index();
+  Index(int &num_rows, vector<int> &key, vector<int> &value);
+  void search(int);
+  void insert(int);
+  void remove(int);
+  void display(Node *);
+  Node *getRoot();
+  void cleanUp(Node *);
+  void clear_index();
+  ~Index();
+};
 
 #endif
