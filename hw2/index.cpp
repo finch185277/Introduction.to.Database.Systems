@@ -5,155 +5,154 @@
 #define ORDER 6
 
 struct BPT_node {
-  int *d;
+  int *data;
   BPT_node **child_ptr;
-  bool l;
-  int n;
-} *r = NULL, *np = NULL, *x = NULL;
+  bool is_leaf;
+  int nleaf;
+} *root = NULL, *parent = NULL, *cur = NULL;
 
 BPT_node *init() {
-  int i;
-  np = new BPT_node;
-  np->d = new int[ORDER];
-  np->child_ptr = new BPT_node *[ORDER];
-  np->l = true;
-  np->n = 0;
-  for (i = 0; i < ORDER; i++) {
-    np->child_ptr[i] = NULL;
+  parent = new BPT_node;
+  parent->data = new int[ORDER];
+  parent->child_ptr = new BPT_node *[ORDER];
+  parent->is_leaf = true;
+  parent->nleaf = 0;
+  for (int i = 0; i < ORDER; i++) {
+    parent->child_ptr[i] = NULL;
   }
-  return np;
+  return parent;
 }
 
-void traverse(BPT_node *p) {
+void traverse(BPT_node *node) {
   std::cout << std::endl;
   int i;
-  for (i = 0; i < p->n; i++) {
-    if (p->l == false) {
-      traverse(p->child_ptr[i]);
+  for (i = 0; i < node->nleaf; i++) {
+    if (node->is_leaf == false) {
+      traverse(node->child_ptr[i]);
     }
-    std::cout << " " << p->d[i];
+    std::cout << " " << node->data[i];
   }
-  if (p->l == false) {
-    traverse(p->child_ptr[i]);
+  if (node->is_leaf == false) {
+    traverse(node->child_ptr[i]);
   }
   std::cout << std::endl;
 }
 
-void sort(int *p, int n) {
-  int i, j, t;
-  for (i = 0; i < n; i++) {
-    for (j = i; j <= n; j++) {
-      if (p[i] > p[j]) {
-        t = p[i];
-        p[i] = p[j];
-        p[j] = t;
+void sort(int *node, int nleaf) {
+  for (int i = 0; i < nleaf; i++) {
+    for (int j = i; j <= nleaf; j++) {
+      if (node[i] > node[j]) {
+        int t = node[i];
+        node[i] = node[j];
+        node[j] = t;
       }
     }
   }
 }
 
-int split_child(BPT_node *x, int i) {
+int split_child(BPT_node *cur, int i) {
   int j, mid;
-  BPT_node *np1, *np3, *y;
-  np3 = init();
-  np3->l = true;
+  BPT_node *parent1, *parent3, *y;
+  parent3 = init();
+  parent3->is_leaf = true;
   if (i == -1) {
-    mid = x->d[ORDER / 2 - 1];
-    x->d[ORDER / 2 - 1] = 0;
-    x->n--;
-    np1 = init();
-    np1->l = false;
-    x->l = true;
+    mid = cur->data[ORDER / 2 - 1];
+    cur->data[ORDER / 2 - 1] = 0;
+    cur->nleaf--;
+    parent1 = init();
+    parent1->is_leaf = false;
+    cur->is_leaf = true;
     for (j = ORDER / 2; j < ORDER; j++) {
-      np3->d[j - ORDER / 2] = x->d[j];
-      np3->child_ptr[j - ORDER / 2] = x->child_ptr[j];
-      np3->n++;
-      x->d[j] = 0;
-      x->n--;
+      parent3->data[j - ORDER / 2] = cur->data[j];
+      parent3->child_ptr[j - ORDER / 2] = cur->child_ptr[j];
+      parent3->nleaf++;
+      cur->data[j] = 0;
+      cur->nleaf--;
     }
     for (j = 0; j < ORDER; j++) {
-      x->child_ptr[j] = NULL;
+      cur->child_ptr[j] = NULL;
     }
-    np1->d[0] = mid;
-    np1->child_ptr[np1->n] = x;
-    np1->child_ptr[np1->n + 1] = np3;
-    np1->n++;
-    r = np1;
+    parent1->data[0] = mid;
+    parent1->child_ptr[parent1->nleaf] = cur;
+    parent1->child_ptr[parent1->nleaf + 1] = parent3;
+    parent1->nleaf++;
+    root = parent1;
   } else {
-    y = x->child_ptr[i];
-    mid = y->d[ORDER / 2 - 1];
-    y->d[ORDER / 2 - 1] = 0;
-    y->n--;
+    y = cur->child_ptr[i];
+    mid = y->data[ORDER / 2 - 1];
+    y->data[ORDER / 2 - 1] = 0;
+    y->nleaf--;
     for (j = ORDER / 2; j < ORDER; j++) {
-      np3->d[j - ORDER / 2] = y->d[j];
-      np3->n++;
-      y->d[j] = 0;
-      y->n--;
+      parent3->data[j - ORDER / 2] = y->data[j];
+      parent3->nleaf++;
+      y->data[j] = 0;
+      y->nleaf--;
     }
-    x->child_ptr[i + 1] = y;
-    x->child_ptr[i + 1] = np3;
+    cur->child_ptr[i + 1] = y;
+    cur->child_ptr[i + 1] = parent3;
   }
   return mid;
 }
 
-void insert(int a) {
+void insert(int key) {
   int i, t;
-  x = r;
-  if (x == NULL) {
-    r = init();
-    x = r;
+  cur = root;
+  if (cur == NULL) {
+    root = init();
+    cur = root;
   } else {
-    if (x->l == true && x->n == ORDER) {
-      t = split_child(x, -1);
-      x = r;
-      for (i = 0; i < (x->n); i++) {
-        if ((a > x->d[i]) && (a < x->d[i + 1])) {
+    if (cur->is_leaf == true && cur->nleaf == ORDER) {
+      t = split_child(cur, -1);
+      cur = root;
+      for (i = 0; i < (cur->nleaf); i++) {
+        if ((key > cur->data[i]) && (key < cur->data[i + 1])) {
           i++;
           break;
-        } else if (a < x->d[0]) {
+        } else if (key < cur->data[0]) {
           break;
         } else {
           continue;
         }
       }
-      x = x->child_ptr[i];
+      cur = cur->child_ptr[i];
     } else {
-      while (x->l == false) {
-        for (i = 0; i < (x->n); i++) {
-          if ((a > x->d[i]) && (a < x->d[i + 1])) {
+      while (cur->is_leaf == false) {
+        for (i = 0; i < (cur->nleaf); i++) {
+          if ((key > cur->data[i]) && (key < cur->data[i + 1])) {
             i++;
             break;
-          } else if (a < x->d[0]) {
+          } else if (key < cur->data[0]) {
             break;
           } else {
             continue;
           }
         }
-        if ((x->child_ptr[i])->n == ORDER) {
-          t = split_child(x, i);
-          x->d[x->n] = t;
-          x->n++;
+        if ((cur->child_ptr[i])->nleaf == ORDER) {
+          t = split_child(cur, i);
+          cur->data[cur->nleaf] = t;
+          cur->nleaf++;
           continue;
         } else {
-          x = x->child_ptr[i];
+          cur = cur->child_ptr[i];
         }
       }
     }
   }
-  x->d[x->n] = a;
-  sort(x->d, x->n);
-  x->n++;
+  cur->data[cur->nleaf] = key;
+  sort(cur->data, cur->nleaf);
+  cur->nleaf++;
 }
 
 int main() {
-  int i, n, t;
+  int n;
   std::cout << "enter the no of elements to be inserted\n";
   std::cin >> n;
-  for (i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
+    int t;
     std::cout << "enter the element\n";
     std::cin >> t;
     insert(t);
   }
   std::cout << "traversal of constructed B tree\n";
-  traverse(r);
+  traverse(root);
 }
