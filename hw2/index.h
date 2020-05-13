@@ -8,7 +8,6 @@
 #include <fstream>
 #include <iostream>
 #include <stack>
-#include <string>
 #include <vector>
 
 #define ERROR -1
@@ -22,19 +21,19 @@ using namespace std;
 class Node {
 protected:
   bool isLeaf;
-  vector<float> keys;
+  vector<int> keys;
 
 public:
   bool Get_IsLeaf();
-  vector<float> Get_Keys();
-  virtual void Insert(float key, string value) {}
-  virtual void Insert(float key, Node *rightChild) {}
-  virtual void Insert(float key, Node *leftChild, Node *rightChild) {}
-  virtual void Search(float key) {}
-  virtual void Search(float key1, float key2) {}
-  virtual Node *Split(float *keyToParent) {}
+  vector<int> Get_Keys();
+  virtual void Insert(int key, int value) {}
+  virtual void Insert(int key, Node *rightChild) {}
+  virtual void Insert(int key, Node *leftChild, Node *rightChild) {}
+  virtual void Search(int key) {}
+  virtual void Search(int key1, int key2) {}
+  virtual Node *Split(int *keyToParent) {}
   virtual vector<Node *> Get_Children() {}
-  virtual vector<vector<string>> Get_Values() {}
+  virtual vector<vector<int>> Get_Values() {}
   virtual Node *Get_Next() {}
 };
 
@@ -45,9 +44,9 @@ private:
 
 public:
   InternalNode();
-  void Insert(float key, Node *rightChild);
-  void Insert(float key, Node *leftChild, Node *rightChild);
-  Node *Split(float *keyToParent);
+  void Insert(int key, Node *rightChild);
+  void Insert(int key, Node *leftChild, Node *rightChild);
+  Node *Split(int *keyToParent);
   vector<Node *> Get_Children();
 };
 
@@ -56,13 +55,13 @@ class LeafNode : public Node {
 private:
   LeafNode *prev;
   LeafNode *next;
-  vector<vector<string>> values;
+  vector<vector<int>> values;
 
 public:
   LeafNode();
-  void Insert(float key, string value);
-  Node *Split(float *keyToParent);
-  vector<vector<string>> Get_Values();
+  void Insert(int key, int value);
+  Node *Split(int *keyToParent);
+  vector<vector<int>> Get_Values();
   Node *Get_Next();
 };
 
@@ -72,7 +71,7 @@ private:
   int order;
   Node *root;
   ofstream outputFile;
-  void Search_Path(Node *node, float key, stack<Node *> *path);
+  void Search_Path(Node *node, int key, stack<Node *> *path);
   void Destroy(Node *node);
 
 #ifdef DEBUG
@@ -81,9 +80,9 @@ private:
 
 public:
   void Initialize(int m);
-  void Insert(float key, string value);
-  void Search(float key);
-  void Search(float key1, float key2);
+  void Insert(int key, int value);
+  void Search(int key);
+  void Search(int key1, int key2);
   void Open_Output_File();
   void Close_Output_File();
   ~BPlusTree();

@@ -9,7 +9,7 @@ bool Node::Get_IsLeaf() {
 }
 
 // getter function for accessing keys
-vector<float> Node::Get_Keys() {
+vector<int> Node::Get_Keys() {
   // return the vector of keys
   return keys;
 }
@@ -18,9 +18,9 @@ vector<float> Node::Get_Keys() {
 InternalNode::InternalNode() { isLeaf = false; }
 
 // function for insertion in an internal node
-void InternalNode::Insert(float key, Node *rightChild) {
+void InternalNode::Insert(int key, Node *rightChild) {
   // insert key in to suitable position in the given internal node
-  vector<float>::iterator index = lower_bound(keys.begin(), keys.end(), key);
+  vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
   keys.insert(index, key);
 
   // insert right child in the immediately next index in the children vector
@@ -29,7 +29,7 @@ void InternalNode::Insert(float key, Node *rightChild) {
 }
 
 // function for insertion in a new internal root node
-void InternalNode::Insert(float key, Node *leftChild, Node *rightChild) {
+void InternalNode::Insert(int key, Node *leftChild, Node *rightChild) {
   // insert key, left child and right child
   keys.push_back(key);
   children.push_back(leftChild);
@@ -37,7 +37,7 @@ void InternalNode::Insert(float key, Node *leftChild, Node *rightChild) {
 }
 
 // function for splitting an internal node
-Node *InternalNode::Split(float *keyToParent) {
+Node *InternalNode::Split(int *keyToParent) {
   int length = keys.size();
 
   // create a new right internal node
@@ -75,9 +75,9 @@ LeafNode::LeafNode() {
 }
 
 // function for insertion in a leaf node
-void LeafNode::Insert(float key, string value) {
+void LeafNode::Insert(int key, int value) {
   // search for the key in the given leaf node
-  vector<float>::iterator index = lower_bound(keys.begin(), keys.end(), key);
+  vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
 
   // check if inserting a duplicate value for an existing key
   if ((0 != keys.size()) && (key == keys[index - keys.begin()])) {
@@ -91,7 +91,7 @@ void LeafNode::Insert(float key, string value) {
     keys.insert(index, key);
 
     // insert the corresponding value
-    vector<string> newValue;
+    vector<int> newValue;
     newValue.push_back(value);
     index = lower_bound(keys.begin(), keys.end(), key);
     values.insert(values.begin() + (index - keys.begin()), newValue);
@@ -99,7 +99,7 @@ void LeafNode::Insert(float key, string value) {
 }
 
 // function for splitting a leaf node
-Node *LeafNode::Split(float *keyToParent) {
+Node *LeafNode::Split(int *keyToParent) {
   // create a new right leaf node
   LeafNode *rightNode = new LeafNode;
 
@@ -126,7 +126,7 @@ Node *LeafNode::Split(float *keyToParent) {
 }
 
 // getter function for accessing values
-vector<vector<string>> LeafNode ::Get_Values() {
+vector<vector<int>> LeafNode::Get_Values() {
   // return the vector of values
   return values;
 }
@@ -138,16 +138,16 @@ Node *LeafNode::Get_Next() {
 }
 
 // function for searching from root to leaf node and pushing on to a stack
-void BPlusTree::Search_Path(Node *node, float key, stack<Node *> *path) {
+void BPlusTree::Search_Path(Node *node, int key, stack<Node *> *path) {
   // push node to stack
   path->push(node);
 
   // check if the node pushed to stack is an internal node
   if (!node->Get_IsLeaf()) {
     // search for the given key in the current node
-    vector<float> keys = node->Get_Keys();
+    vector<int> keys = node->Get_Keys();
     vector<Node *> children = node->Get_Children();
-    vector<float>::iterator index = lower_bound(keys.begin(), keys.end(), key);
+    vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
 
     // check if key is found
     if (key == keys[index - keys.begin()]) {
@@ -199,8 +199,8 @@ void BPlusTree::Reveal_Tree(Node *node) {
   }
 
   // display the keys
-  vector<float> keys = node->Get_Keys();
-  for (vector<float>::iterator index = keys.begin(); index != keys.end();
+  vector<int> keys = node->Get_Keys();
+  for (vector<int>::iterator index = keys.begin(); index != keys.end();
        index++) {
     cout << *index << " ";
   }
@@ -213,8 +213,8 @@ void BPlusTree::Reveal_Tree(Node *node) {
     cout << "children" << endl << "--------" << endl;
     for (vector<Node *>::iterator index = children.begin();
          index != children.end(); index++) {
-      vector<float> childKeys = (*index)->Get_Keys();
-      for (vector<float>::iterator i = childKeys.begin(); i != childKeys.end();
+      vector<int> childKeys = (*index)->Get_Keys();
+      for (vector<int>::iterator i = childKeys.begin(); i != childKeys.end();
            i++) {
         cout << *i << " ";
       }
@@ -237,7 +237,7 @@ void BPlusTree::Initialize(int m) {
 }
 
 // operation: Insert(key, value)
-void BPlusTree::Insert(float key, string value) {
+void BPlusTree::Insert(int key, int value) {
   // check if tree is empty
   if (NULL == root) {
     // Irrespective of the order, root is always a leaf node for
@@ -250,7 +250,7 @@ void BPlusTree::Insert(float key, string value) {
   else {
     Node *leftNode = NULL;
     Node *rightNode = NULL;
-    float *keyToParent = new float;
+    int *keyToParent = new int;
     bool rootPopped = false;
 
     // obtain the search path from the root to leaf node and push it on to a
@@ -306,7 +306,7 @@ void BPlusTree::Insert(float key, string value) {
 }
 
 // operation: Search(key)
-void BPlusTree::Search(float key) {
+void BPlusTree::Search(int key) {
   // check if tree is empty
   if (NULL == root) {
     outputFile << "-1" << endl;
@@ -321,9 +321,9 @@ void BPlusTree::Search(float key) {
     Search_Path(root, key, path);
 
     // search for the key in the leaf node, which is at the top of the stack
-    vector<float> keys = path->top()->Get_Keys();
-    vector<vector<string>> values = path->top()->Get_Values();
-    vector<float>::iterator index = lower_bound(keys.begin(), keys.end(), key);
+    vector<int> keys = path->top()->Get_Keys();
+    vector<vector<int>> values = path->top()->Get_Values();
+    vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
 
     // check if key is found
     if (key == keys[index - keys.begin()]) {
@@ -344,7 +344,7 @@ void BPlusTree::Search(float key) {
 }
 
 // operation: Search(key1, key2)
-void BPlusTree::Search(float key1, float key2) {
+void BPlusTree::Search(int key1, int key2) {
   // check if tree is empty
   if (NULL == root) {
     outputFile << "-1" << endl;
@@ -354,17 +354,17 @@ void BPlusTree::Search(float key1, float key2) {
   else {
     int i = 0;
     bool firstPass = true;
-    float firstKey = ERROR;
+    int firstKey = ERROR;
 
     // obtain the search path from root to leaf node and push it on to a stack
     stack<Node *> *path = new stack<Node *>;
     Search_Path(root, key1, path);
 
     // search for the key in the leaf node, which is at the top of the stack
-    vector<float> keys = path->top()->Get_Keys();
-    vector<vector<string>> values = path->top()->Get_Values();
+    vector<int> keys = path->top()->Get_Keys();
+    vector<vector<int>> values = path->top()->Get_Values();
     Node *next = path->top()->Get_Next();
-    vector<float>::iterator index = lower_bound(keys.begin(), keys.end(), key1);
+    vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key1);
 
     // display all the keys in the search range, along with their corresponding
     // values
@@ -452,7 +452,7 @@ void BPlusTree::Print_Tree() { Reveal_Tree(root); }
 Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
   tree.Initialize(6);
   for (int i = 0; i < num_rows; i++) {
-    tree.Insert(key.at(i), to_string(value.at(i)));
+    tree.Insert(key.at(i), value.at(i));
   }
   tree.Open_Output_File();
 }
