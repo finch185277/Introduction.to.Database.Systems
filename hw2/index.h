@@ -1,45 +1,96 @@
 #ifndef INDEX_H_
 #define INDEX_H_
 
+// uncomment for debug mode
+//#define DEBUG
+
+#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <sstream>
+#include <stack>
 #include <string>
 #include <vector>
 
+#define ERROR -1
+#define NUM_ARGS 2
+#define MIN_ORDER 3
+#define OUTPUT_FILE "output_file.txt"
+
 using namespace std;
 
-class Index; // self explanatory classes
-
+// generic node
 class Node {
-private:
-  bool IS_LEAF;
-  int *key, size;
-  Node **ptr;
-  friend class Index;
+protected:
+  bool isLeaf;
+  vector<float> keys;
 
 public:
-  Node();
+  bool Get_IsLeaf();
+  vector<float> Get_Keys();
+  virtual void Insert(float key, string value) {}
+  virtual void Insert(float key, Node *rightChild) {}
+  virtual void Insert(float key, Node *leftChild, Node *rightChild) {}
+  virtual void Search(float key) {}
+  virtual void Search(float key1, float key2) {}
+  virtual Node *Split(float *keyToParent) {}
+  virtual vector<Node *> Get_Children() {}
+  virtual vector<vector<string>> Get_Values() {}
+  virtual Node *Get_Next() {}
 };
 
-class Index {
+// internal node
+class InternalNode : public Node {
 private:
-  Node *root;
-  void insertInternal(int, Node *, Node *);
-  void removeInternal(int, Node *, Node *);
-  Node *findParent(Node *, Node *);
+  vector<Node *> children;
 
 public:
-  Index();
-  Index(int &num_rows, vector<int> &key, vector<int> &value);
-  void search(int);
-  void insert(int);
-  void remove(int);
-  void display(Node *);
-  Node *getRoot();
-  void cleanUp(Node *);
-  void clear_index();
-  ~Index();
+  InternalNode();
+  void Insert(float key, Node *rightChild);
+  void Insert(float key, Node *leftChild, Node *rightChild);
+  Node *Split(float *keyToParent);
+  vector<Node *> Get_Children();
+};
+
+// leaf node
+class LeafNode : public Node {
+private:
+  LeafNode *prev;
+  LeafNode *next;
+  vector<vector<string>> values;
+
+public:
+  LeafNode();
+  void Insert(float key, string value);
+  Node *Split(float *keyToParent);
+  vector<vector<string>> Get_Values();
+  Node *Get_Next();
+};
+
+// B+ tree
+class BPlusTree {
+private:
+  int order;
+  Node *root;
+  ofstream outputFile;
+  void Search_Path(Node *node, float key, stack<Node *> *path);
+  void Destroy(Node *node);
+
+#ifdef DEBUG
+  void Reveal_Tree(Node *node);
+#endif
+
+public:
+  void Initialize(int m);
+  void Insert(float key, string value);
+  void Search(float key);
+  void Search(float key1, float key2);
+  void Open_Output_File();
+  void Close_Output_File();
+  ~BPlusTree();
+
+#ifdef DEBUG
+  void Print_Tree();
+#endif
 };
 
 #endif
