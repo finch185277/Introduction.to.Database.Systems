@@ -1,45 +1,102 @@
 #ifndef INDEX_H_
 #define INDEX_H_
 
+// uncomment for debug mode
+//#define DEBUG
+
+#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <string>
+#include <stack>
 #include <vector>
+
+#define ERROR -1
+#define NUM_ARGS 2
+#define MIN_ORDER 3
 
 using namespace std;
 
-class Index; // self explanatory classes
-
+// generic node
 class Node {
-private:
-  bool IS_LEAF;
-  int *key, size;
-  Node **ptr;
-  friend class Index;
+protected:
+  bool isLeaf;
+  vector<int> keys;
 
 public:
-  Node();
+  bool Get_IsLeaf();
+  vector<int> Get_Keys();
+  virtual void Insert(int key, int value) {}
+  virtual void Insert(int key, Node *rightChild) {}
+  virtual void Insert(int key, Node *leftChild, Node *rightChild) {}
+  virtual void Search(int key) {}
+  virtual void Search(int key1, int key2) {}
+  virtual Node *Split(int *keyToParent) {}
+  virtual vector<Node *> Get_Children() {}
+  virtual vector<vector<int>> Get_Values() {}
+  virtual Node *Get_Next() {}
+};
+
+// internal node
+class InternalNode : public Node {
+private:
+  vector<Node *> children;
+
+public:
+  InternalNode();
+  void Insert(int key, Node *rightChild);
+  void Insert(int key, Node *leftChild, Node *rightChild);
+  Node *Split(int *keyToParent);
+  vector<Node *> Get_Children();
+};
+
+// leaf node
+class LeafNode : public Node {
+private:
+  LeafNode *prev;
+  LeafNode *next;
+  vector<vector<int>> values;
+
+public:
+  LeafNode();
+  void Insert(int key, int value);
+  Node *Split(int *keyToParent);
+  vector<vector<int>> Get_Values();
+  Node *Get_Next();
+};
+
+// B+ tree
+class BPlusTree {
+private:
+  int order;
+  Node *root;
+  void Search_Path(Node *node, int key, stack<Node *> *path);
+  void Destroy(Node *node);
+
+#ifdef DEBUG
+  void Reveal_Tree(Node *node);
+#endif
+
+public:
+  void Initialize(int m);
+  void Insert(int key, int value);
+  int Search(int key);
+  vector<pair<int, int>> Search(int key1, int key2);
+  ~BPlusTree();
+
+#ifdef DEBUG
+  void Print_Tree();
+#endif
 };
 
 class Index {
 private:
-  Node *root;
-  void insertInternal(int, Node *, Node *);
-  void removeInternal(int, Node *, Node *);
-  Node *findParent(Node *, Node *);
+  BPlusTree tree;
 
 public:
-  Index();
   Index(int &num_rows, vector<int> &key, vector<int> &value);
-  void search(int);
-  void insert(int);
-  void remove(int);
-  void display(Node *);
-  Node *getRoot();
-  void cleanUp(Node *);
+  void key_query(vector<int> &query_keys);
+  void range_query(vector<pair<int, int>> &query_pairs);
   void clear_index();
-  ~Index();
 };
 
 #endif
