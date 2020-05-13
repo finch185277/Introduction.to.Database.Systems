@@ -309,7 +309,7 @@ void BPlusTree::Insert(float key, string value) {
 void BPlusTree::Search(float key) {
   // check if tree is empty
   if (NULL == root) {
-    outputFile << "Null" << endl;
+    outputFile << "-1" << endl;
   }
 
   // if it is a vaild search
@@ -336,7 +336,7 @@ void BPlusTree::Search(float key) {
 
     // if key is not found
     else {
-      outputFile << "Null" << endl;
+      outputFile << "-1" << endl;
     }
 
     delete (path);
@@ -347,7 +347,7 @@ void BPlusTree::Search(float key) {
 void BPlusTree::Search(float key1, float key2) {
   // check if tree is empty
   if (NULL == root) {
-    outputFile << "Null" << endl;
+    outputFile << "-1" << endl;
   }
 
   // if it is a valid range search
@@ -414,7 +414,7 @@ void BPlusTree::Search(float key1, float key2) {
 
         // if no keys belonged within the search range
         else {
-          outputFile << "Null" << endl;
+          outputFile << "-1" << endl;
         }
 
         // exit the loop
@@ -454,10 +454,22 @@ Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
   for (int i = 0; i < num_rows; i++) {
     tree.Insert(key.at(i), to_string(value.at(i)));
   }
+  tree.Open_Output_File();
 }
 
-void Index::key_query(vector<int> &query_keys) {}
+void Index::key_query(vector<int> &query_keys) {
+  for (int i = 0; i < query_keys.size(); i++) {
+    tree.Search(query_keys.at(i));
+  }
+}
 
-void Index::range_query(vector<pair<int, int>> &query_pairs) {}
+void Index::range_query(vector<pair<int, int>> &query_pairs) {
+  for (int i = 0; i < query_pairs.size(); i++) {
+    tree.Search(query_pairs.at(i).first, query_pairs.at(i).second);
+  }
+}
 
-void Index::clear_index() {}
+void Index::clear_index() {
+  tree.Close_Output_File();
+  // tree.Destroy(tree.root);
+}
