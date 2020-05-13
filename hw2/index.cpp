@@ -461,13 +461,15 @@ void Index::range_query(vector<pair<int, int>> &query_pairs) {
   outputFile.open("range_query_out.txt", ios::out | ios::trunc);
 
   for (int i = 0; i < query_pairs.size(); i++) {
-    tree.Search(query_pairs.at(i).first, query_pairs.at(i).second);
+    vector<pair<int, int>> v =
+        tree.Search(query_pairs.at(i).first, query_pairs.at(i).second);
+    sort(v.begin(), v.end(),
+         [](auto &left, auto &right) { return left.second < right.second; });
+    outputFile << v.back().second << endl;
   }
 
   // close the output file
   outputFile.close();
 }
 
-void Index::clear_index() {
-  // tree.Destroy(tree.root);
-}
+void Index::clear_index() {}
