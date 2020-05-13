@@ -347,7 +347,6 @@ vector<pair<int, int>> BPlusTree::Search(int key1, int key2) {
   // check if tree is empty
   if (NULL == root) {
     ret.push_back(pair<int, int>(-1, -1));
-    return ret;
   }
 
   // if it is a valid range search
@@ -422,9 +421,9 @@ vector<pair<int, int>> BPlusTree::Search(int key1, int key2) {
     }
 
     delete (path);
-
-    return ret;
   }
+
+  return ret;
 }
 
 // destructor for tree
