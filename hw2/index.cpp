@@ -138,7 +138,7 @@ Node *LeafNode::Get_Next() {
 }
 
 // function for searching from root to leaf node and pushing on to a stack
-void BPlusTree::Search_Path(Node *node, float key, stack<Node *> *path) {
+void Index::Search_Path(Node *node, float key, stack<Node *> *path) {
   // push node to stack
   path->push(node);
 
@@ -166,7 +166,7 @@ void BPlusTree::Search_Path(Node *node, float key, stack<Node *> *path) {
 }
 
 // function to destroy the tree
-void BPlusTree::Destroy(Node *node) {
+void Index::Destroy(Node *node) {
   // recursively repeat the function to delete all the nodes level by level,
   // starting with the leaf nodes
   if (!node->Get_IsLeaf()) {
@@ -181,7 +181,7 @@ void BPlusTree::Destroy(Node *node) {
 
 #ifdef DEBUG
 // function to reveal the contents of the B+ tree
-void BPlusTree::Reveal_Tree(Node *node) {
+void Index::Reveal_Tree(Node *node) {
   // check if tree is empty
   if (NULL == node) {
     cout << endl << "Root Node: Null";
@@ -231,13 +231,13 @@ void BPlusTree::Reveal_Tree(Node *node) {
 #endif
 
 // operation: Initialize(m)
-void BPlusTree::Initialize(int m) {
+void Index::Initialize(int m) {
   order = m;
   root = NULL;
 }
 
 // operation: Insert(key, value)
-void BPlusTree::Insert(float key, string value) {
+void Index::Insert(float key, string value) {
   // check if tree is empty
   if (NULL == root) {
     // Irrespective of the order, root is always a leaf node for
@@ -306,7 +306,7 @@ void BPlusTree::Insert(float key, string value) {
 }
 
 // operation: Search(key)
-void BPlusTree::Search(float key) {
+void Index::Search(float key) {
   // check if tree is empty
   if (NULL == root) {
     outputFile << "Null" << endl;
@@ -344,7 +344,7 @@ void BPlusTree::Search(float key) {
 }
 
 // operation: Search(key1, key2)
-void BPlusTree::Search(float key1, float key2) {
+void Index::Search(float key1, float key2) {
   // check if tree is empty
   if (NULL == root) {
     outputFile << "Null" << endl;
@@ -430,21 +430,21 @@ void BPlusTree::Search(float key1, float key2) {
 }
 
 // function to open the output file
-void BPlusTree::Open_Output_File() {
+void Index::Open_Output_File() {
   // open output file for writing
   outputFile.open(OUTPUT_FILE, ios::out | ios::trunc);
 }
 
 // function to close the output file
-void BPlusTree::Close_Output_File() {
+void Index::Close_Output_File() {
   // close the output file
   outputFile.close();
 }
 
 // destructor for tree
-BPlusTree::~BPlusTree() { Destroy(root); }
+Index::~Index() { Destroy(root); }
 
 #ifdef DEBUG
 // function to print the current state of the tree
-void BPlusTree::Print_Tree() { Reveal_Tree(root); }
+void Index::Print_Tree() { Reveal_Tree(root); }
 #endif

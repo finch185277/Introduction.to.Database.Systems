@@ -5,7 +5,7 @@ int main(int argc, char *argv[]) {
   int m = ERROR, pos = ERROR;
   float key = ERROR, key1 = ERROR, key2 = ERROR;
   string line, value;
-  class BPlusTree tree;
+  class Index tree;
 
   // check command-line arguments
   if (NUM_ARGS != argc) {
