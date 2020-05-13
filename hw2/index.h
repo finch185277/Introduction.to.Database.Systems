@@ -93,4 +93,15 @@ public:
 #endif
 };
 
+class Index {
+private:
+  BPlusTree tree;
+
+public:
+  Index(int &num_rows, vector<int> &key, vector<int> &value);
+  void key_query(vector<int> &query_keys);
+  void range_query(vector<pair<int, int>> &query_pairs);
+  void clear_index();
+};
+
 #endif

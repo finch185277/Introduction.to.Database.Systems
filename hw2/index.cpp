@@ -448,3 +448,16 @@ BPlusTree::~BPlusTree() { Destroy(root); }
 // function to print the current state of the tree
 void BPlusTree::Print_Tree() { Reveal_Tree(root); }
 #endif
+
+Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
+  tree.Initialize(6);
+  for (int i = 0; i < num_rows; i++) {
+    tree.Insert(key.at(i), to_string(value.at(i)));
+  }
+}
+
+void Index::key_query(vector<int> &query_keys) {}
+
+void Index::range_query(vector<pair<int, int>> &query_pairs) {}
+
+void Index::clear_index() {}
