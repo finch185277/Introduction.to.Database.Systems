@@ -13,7 +13,6 @@
 #define ERROR -1
 #define NUM_ARGS 2
 #define MIN_ORDER 3
-#define OUTPUT_FILE "output_file.txt"
 
 using namespace std;
 
@@ -70,7 +69,6 @@ class BPlusTree {
 private:
   int order;
   Node *root;
-  ofstream outputFile;
   void Search_Path(Node *node, int key, stack<Node *> *path);
   void Destroy(Node *node);
 
@@ -81,10 +79,8 @@ private:
 public:
   void Initialize(int m);
   void Insert(int key, int value);
-  void Search(int key);
-  void Search(int key1, int key2);
-  void Open_Output_File();
-  void Close_Output_File();
+  int Search(int key);
+  vector<pair<int, int>> Search(int key1, int key2);
   ~BPlusTree();
 
 #ifdef DEBUG

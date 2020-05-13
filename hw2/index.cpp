@@ -306,10 +306,10 @@ void BPlusTree::Insert(int key, int value) {
 }
 
 // operation: Search(key)
-void BPlusTree::Search(int key) {
+int BPlusTree::Search(int key) {
   // check if tree is empty
   if (NULL == root) {
-    outputFile << "-1" << endl;
+    return -1;
   }
 
   // if it is a vaild search
@@ -327,16 +327,13 @@ void BPlusTree::Search(int key) {
 
     // check if key is found
     if (key == keys[index - keys.begin()]) {
-      // display the values
-      for (i = 0; i < values[index - keys.begin()].size() - 1; i++) {
-        outputFile << values[index - keys.begin()][i] << ",";
-      }
-      outputFile << values[index - keys.begin()][i] << endl;
+      // only return last value
+      return values[index - keys.begin()].back();
     }
 
     // if key is not found
     else {
-      outputFile << "-1" << endl;
+      return -1;
     }
 
     delete (path);
@@ -344,10 +341,13 @@ void BPlusTree::Search(int key) {
 }
 
 // operation: Search(key1, key2)
-void BPlusTree::Search(int key1, int key2) {
+vector<pair<int, int>> BPlusTree::Search(int key1, int key2) {
+  vector<pair<int, int>> ret;
+
   // check if tree is empty
   if (NULL == root) {
-    outputFile << "-1" << endl;
+    ret.push_back(pair<int, int>(-1, -1));
+    return ret;
   }
 
   // if it is a valid range search
@@ -393,28 +393,24 @@ void BPlusTree::Search(int key1, int key2) {
       if ((key1 <= keys[index - keys.begin()]) &&
           (keys[index - keys.begin()] <= key2)) {
         if (!firstPass) {
-          outputFile << ",";
+          ;
         }
 
-        // display the key and its corresponding values
-        for (i = 0; i < values[index - keys.begin()].size() - 1; i++) {
-          outputFile << "(" << keys[index - keys.begin()] << ","
-                     << values[index - keys.begin()][i] << "),";
-        }
-        outputFile << "(" << keys[index - keys.begin()] << ","
-                   << values[index - keys.begin()][i] << ")";
+        // store the key and its last value
+        ret.push_back(pair<int, int>(keys[index - keys.begin()],
+                                     values[index - keys.begin()].back()));
       }
 
       // if key is not within the search range
       else {
-        // check if atleast one key was in the search range
+        // check if at least one key was in the search range
         if (!firstPass) {
-          outputFile << endl;
+          ;
         }
 
         // if no keys belonged within the search range
         else {
-          outputFile << "-1" << endl;
+          ret.push_back(pair<int, int>(-1, -1));
         }
 
         // exit the loop
@@ -426,19 +422,9 @@ void BPlusTree::Search(int key1, int key2) {
     }
 
     delete (path);
+
+    return ret;
   }
-}
-
-// function to open the output file
-void BPlusTree::Open_Output_File() {
-  // open output file for writing
-  outputFile.open(OUTPUT_FILE, ios::out | ios::trunc);
-}
-
-// function to close the output file
-void BPlusTree::Close_Output_File() {
-  // close the output file
-  outputFile.close();
 }
 
 // destructor for tree
@@ -454,22 +440,34 @@ Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
   for (int i = 0; i < num_rows; i++) {
     tree.Insert(key.at(i), value.at(i));
   }
-  tree.Open_Output_File();
 }
 
 void Index::key_query(vector<int> &query_keys) {
+  // open output file for writing
+  ofstream outputFile;
+  outputFile.open("key_query_out.txt", ios::out | ios::trunc);
+
   for (int i = 0; i < query_keys.size(); i++) {
-    tree.Search(query_keys.at(i));
+    outputFile << tree.Search(query_keys.at(i)) << endl;
   }
+
+  // close the output file
+  outputFile.close();
 }
 
 void Index::range_query(vector<pair<int, int>> &query_pairs) {
+  // open output file for writing
+  ofstream outputFile;
+  outputFile.open("range_query_out.txt", ios::out | ios::trunc);
+
   for (int i = 0; i < query_pairs.size(); i++) {
     tree.Search(query_pairs.at(i).first, query_pairs.at(i).second);
   }
+
+  // close the output file
+  outputFile.close();
 }
 
 void Index::clear_index() {
-  tree.Close_Output_File();
   // tree.Destroy(tree.root);
 }
