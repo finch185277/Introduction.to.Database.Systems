@@ -67,7 +67,7 @@ public:
 };
 
 // B+ tree
-class Index {
+class BPlusTree {
 private:
   int order;
   Node *root;
@@ -86,7 +86,7 @@ public:
   void Search(float key1, float key2);
   void Open_Output_File();
   void Close_Output_File();
-  ~Index();
+  ~BPlusTree();
 
 #ifdef DEBUG
   void Print_Tree();
