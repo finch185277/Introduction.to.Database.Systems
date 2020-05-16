@@ -437,7 +437,7 @@ void BPlusTree::Print_Tree() { Reveal_Tree(root); }
 #endif
 
 Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
-  tree.Initialize(6);
+  tree.Initialize(DEFAULT_ORDER);
   for (int i = 0; i < num_rows; i++) {
     tree.Insert(key.at(i), value.at(i));
   }
@@ -473,4 +473,6 @@ void Index::range_query(vector<pair<int, int>> &query_pairs) {
   outputFile.close();
 }
 
-void Index::clear_index() {}
+void Index::clear_index() {
+  // release memory in BPlusTree destructor
+}
