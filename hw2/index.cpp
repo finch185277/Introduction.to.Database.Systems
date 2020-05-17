@@ -406,9 +406,11 @@ void Index::range_query(vector<pair<int, int>> &query_pairs) {
   for (int i = 0; i < query_pairs.size(); i++) {
     vector<pair<int, int>> v =
         tree.Search(query_pairs.at(i).first, query_pairs.at(i).second);
-    sort(v.begin(), v.end(),
-         [](auto &left, auto &right) { return left.second < right.second; });
-    outputFile << v.back().second << endl;
+    int biggest_result = -1;
+    for (int j = 0; j < v.size(); j++)
+      if (v[j].second > biggest_result)
+        biggest_result = v[j].second;
+    outputFile << biggest_result << endl;
   }
 
   // close the output file
