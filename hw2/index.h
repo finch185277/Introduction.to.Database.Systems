@@ -35,7 +35,7 @@ public:
   virtual void Search(int key1, int key2) {}
   virtual Node *Split(int *keyToParent) {}
   virtual vector<Node *> Get_Children() {}
-  virtual vector<vector<int>> Get_Values() {}
+  virtual vector<int> Get_Values() {}
   virtual Node *Get_Next() {}
 };
 
@@ -57,13 +57,13 @@ class LeafNode : public Node {
 private:
   LeafNode *prev;
   LeafNode *next;
-  vector<vector<int>> values;
+  vector<int> values;
 
 public:
   LeafNode();
   void Insert(int key, int value);
   Node *Split(int *keyToParent);
-  vector<vector<int>> Get_Values();
+  vector<int> Get_Values();
   Node *Get_Next();
 };
 
@@ -75,20 +75,12 @@ private:
   void Search_Path(Node *node, int key, stack<Node *> *path);
   void Destroy(Node *node);
 
-#ifdef DEBUG
-  void Reveal_Tree(Node *node);
-#endif
-
 public:
   void Initialize(int m);
   void Insert(int key, int value);
   int Search(int key);
   vector<pair<int, int>> Search(int key1, int key2);
   ~BPlusTree();
-
-#ifdef DEBUG
-  void Print_Tree();
-#endif
 };
 
 class Index {

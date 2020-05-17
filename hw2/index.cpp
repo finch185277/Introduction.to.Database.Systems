@@ -84,7 +84,7 @@ void LeafNode::Insert(int key, int value) {
   // check if inserting a duplicate value for an existing key
   if ((0 != keys.size()) && (key == keys[index - keys.begin()])) {
     // add the duplicate value for the given key
-    values[index - keys.begin()].push_back(value);
+    values[index - keys.begin()] = value;
   }
 
   // if inserting a new key and value
@@ -93,10 +93,8 @@ void LeafNode::Insert(int key, int value) {
     keys.insert(index, key);
 
     // insert the corresponding value
-    vector<int> newValue;
-    newValue.push_back(value);
     index = lower_bound(keys.begin(), keys.end(), key);
-    values.insert(values.begin() + (index - keys.begin()), newValue);
+    values.insert(values.begin() + (index - keys.begin()), value);
   }
 }
 
@@ -128,7 +126,7 @@ Node *LeafNode::Split(int *keyToParent) {
 }
 
 // getter function for accessing values
-vector<vector<int>> LeafNode::Get_Values() {
+vector<int> LeafNode::Get_Values() {
   // return the vector of values
   return values;
 }
@@ -180,57 +178,6 @@ void BPlusTree::Destroy(Node *node) {
   }
   delete (node);
 }
-
-#ifdef DEBUG
-// function to reveal the contents of the B+ tree
-void BPlusTree::Reveal_Tree(Node *node) {
-  // check if tree is empty
-  if (NULL == node) {
-    cout << endl << "Root Node: Null";
-    return;
-  }
-
-  // check if current node is a leaf node
-  if (node->Get_IsLeaf()) {
-    cout << endl << "Leaf Node: ";
-  }
-
-  // if current node is a internal node
-  else {
-    cout << endl << "Internal Node: ";
-  }
-
-  // display the keys
-  vector<int> keys = node->Get_Keys();
-  for (vector<int>::iterator index = keys.begin(); index != keys.end();
-       index++) {
-    cout << *index << " ";
-  }
-  cout << endl;
-
-  // check if internal node to continue revelation of the next level
-  if (!node->Get_IsLeaf()) {
-    // display the keys in the children of the current internal node
-    vector<Node *> children = node->Get_Children();
-    cout << "children" << endl << "--------" << endl;
-    for (vector<Node *>::iterator index = children.begin();
-         index != children.end(); index++) {
-      vector<int> childKeys = (*index)->Get_Keys();
-      for (vector<int>::iterator i = childKeys.begin(); i != childKeys.end();
-           i++) {
-        cout << *i << " ";
-      }
-      cout << endl;
-    }
-
-    // recursively repeat revelation of the next level
-    for (vector<Node *>::iterator index = children.begin();
-         index != children.end(); index++) {
-      Reveal_Tree(*index);
-    }
-  }
-}
-#endif
 
 // operation: Initialize(m)
 void BPlusTree::Initialize(int m) {
@@ -324,13 +271,13 @@ int BPlusTree::Search(int key) {
 
     // search for the key in the leaf node, which is at the top of the stack
     vector<int> keys = path->top()->Get_Keys();
-    vector<vector<int>> values = path->top()->Get_Values();
+    vector<int> values = path->top()->Get_Values();
     vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
 
     // check if key is found
     if (key == keys[index - keys.begin()]) {
       // only return last value
-      return values[index - keys.begin()].back();
+      return values[index - keys.begin()];
     }
 
     // if key is not found
@@ -363,7 +310,7 @@ vector<pair<int, int>> BPlusTree::Search(int key1, int key2) {
 
     // search for the key in the leaf node, which is at the top of the stack
     vector<int> keys = path->top()->Get_Keys();
-    vector<vector<int>> values = path->top()->Get_Values();
+    vector<int> values = path->top()->Get_Values();
     Node *next = path->top()->Get_Next();
     vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key1);
 
@@ -399,7 +346,7 @@ vector<pair<int, int>> BPlusTree::Search(int key1, int key2) {
 
         // store the key and its last value
         ret.push_back(pair<int, int>(keys[index - keys.begin()],
-                                     values[index - keys.begin()].back()));
+                                     values[index - keys.begin()]));
       }
 
       // if key is not within the search range
@@ -430,11 +377,6 @@ vector<pair<int, int>> BPlusTree::Search(int key1, int key2) {
 
 // destructor for tree
 BPlusTree::~BPlusTree() { Destroy(root); }
-
-#ifdef DEBUG
-// function to print the current state of the tree
-void BPlusTree::Print_Tree() { Reveal_Tree(root); }
-#endif
 
 Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
   tree.Initialize(DEFAULT_ORDER);
