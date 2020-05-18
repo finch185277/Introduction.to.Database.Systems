@@ -12,7 +12,7 @@
 #include <stack>
 #include <vector>
 
-#define DEFAULT_ORDER 200
+#define DEFAULT_ORDER 3
 #define ERROR -1
 #define NUM_ARGS 2
 #define MIN_ORDER 3
