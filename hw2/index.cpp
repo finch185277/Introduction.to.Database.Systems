@@ -263,7 +263,7 @@ int BPlusTree::Search(int key) {
 
   // if it is a vaild search
   else {
-    int i = 0;
+    int value;
 
     // obtain the search path from root to leaf node and push it on to a stack
     stack<Node *> *path = new stack<Node *>;
@@ -276,16 +276,18 @@ int BPlusTree::Search(int key) {
 
     // check if key is found
     if (key == keys[index - keys.begin()]) {
-      // only return last value
-      return values[index - keys.begin()];
+      value = values[index - keys.begin()];
     }
 
     // if key is not found
     else {
-      return -1;
+      value = -1;
     }
 
     delete (path);
+
+    // return value
+    return value;
   }
 }
 
