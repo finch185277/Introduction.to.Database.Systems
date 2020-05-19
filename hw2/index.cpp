@@ -1,424 +1,821 @@
-// ref: https://github.com/deepaktabraham/BPlus-Tree
+// ref: http://www.amittai.com/prose/bplustree_cpp.html
 
 #include "index.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
-using namespace std;
+// Node.cpp
+Node::Node(int aOrder) : fOrder{aOrder}, fParent{nullptr} {}
 
-// getter function for accessing isLeaf
-bool Node::Get_IsLeaf() {
-  // return whether leaf or internal node
-  return isLeaf;
+Node::Node(int aOrder, Node *aParent) : fOrder{aOrder}, fParent{aParent} {}
+
+Node::~Node() {}
+
+int Node::order() const { return fOrder; }
+
+Node *Node::parent() const { return fParent; }
+
+void Node::setParent(Node *aParent) { fParent = aParent; }
+
+bool Node::isRoot() const { return !fParent; }
+
+// Record.cpp
+Record::Record(ValueType aValue) : fValue(aValue) {}
+
+ValueType Record::value() const { return fValue; }
+
+void Record::setValue(ValueType aValue) { fValue = aValue; }
+
+std::string Record::toString() const {
+  std::ostringstream oss;
+  oss << fValue;
+  return oss.str();
 }
 
-// getter function for accessing keys
-vector<int> Node::Get_Keys() {
-  // return the vector of keys
-  return keys;
-}
+// InternalNode.cpp
+InternalNode::InternalNode(int aOrder) : Node(aOrder) {}
 
-// constructor for internal node
-InternalNode::InternalNode() { isLeaf = false; }
+InternalNode::InternalNode(int aOrder, Node *aParent) : Node(aOrder, aParent) {}
 
-// function for insertion in an internal node
-void InternalNode::Insert(int key, Node *rightChild) {
-  // insert key in to suitable position in the given internal node
-  vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
-  keys.insert(index, key);
-
-  // insert right child in the immediately next index in the children vector
-  index = lower_bound(keys.begin(), keys.end(), key);
-  children.insert(children.begin() + (index - keys.begin() + 1), rightChild);
-}
-
-// function for insertion in a new internal root node
-void InternalNode::Insert(int key, Node *leftChild, Node *rightChild) {
-  // insert key, left child and right child
-  keys.push_back(key);
-  children.push_back(leftChild);
-  children.push_back(rightChild);
-}
-
-// function for splitting an internal node
-Node *InternalNode::Split(int *keyToParent) {
-  int length = keys.size();
-
-  // create a new right internal node
-  InternalNode *rightNode = new InternalNode;
-
-  // key to be moved up to the parent is the middle element in the current
-  // internal node
-  *keyToParent = keys[length / 2];
-
-  // Copy the second half of the current internal node excluding the middle
-  // element to the new right internal node. Erase the second half of the
-  // current internal node including the middle element, and thus current
-  // internal node becomes the left internal node.
-  rightNode->keys.assign(keys.begin() + (length / 2 + 1), keys.end());
-  rightNode->children.assign(children.begin() + (length / 2 + 1),
-                             children.end());
-  keys.erase(keys.begin() + length / 2, keys.end());
-  children.erase(children.begin() + (length / 2 + 1), children.end());
-
-  // return the new right internal node
-  return rightNode;
-}
-
-// getter function for accessing children
-vector<Node *> InternalNode::Get_Children() {
-  // return the children vector
-  return children;
-}
-
-// constructor for leaf node
-LeafNode::LeafNode() {
-  isLeaf = true;
-  prev = this;
-  next = this;
-}
-
-// function for insertion in a leaf node
-void LeafNode::Insert(int key, int value) {
-  // search for the key in the given leaf node
-  vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
-
-  // check if inserting a duplicate value for an existing key
-  if ((0 != keys.size()) && (key == keys[index - keys.begin()])) {
-    // add the duplicate value for the given key
-    values[index - keys.begin()] = value;
-  }
-
-  // if inserting a new key and value
-  else {
-    // insert the new key
-    keys.insert(index, key);
-
-    // insert the corresponding value
-    index = lower_bound(keys.begin(), keys.end(), key);
-    values.insert(values.begin() + (index - keys.begin()), value);
+InternalNode::~InternalNode() {
+  for (auto mapping : fMappings) {
+    delete mapping.second;
   }
 }
 
-// function for splitting a leaf node
-Node *LeafNode::Split(int *keyToParent) {
-  // create a new right leaf node
-  LeafNode *rightNode = new LeafNode;
+bool InternalNode::isLeaf() const { return false; }
 
-  // key to be moved up to the parent is the middle element in the current leaf
-  // node
-  *keyToParent = keys[keys.size() / 2];
+int InternalNode::size() const { return static_cast<int>(fMappings.size()); }
 
-  // Copy the second half of the current leaf node to the new right leaf node.
-  // Erase the second half of the current leaf node, and thus the current leaf
-  // node becomes the left leaf node.
-  rightNode->keys.assign(keys.begin() + keys.size() / 2, keys.end());
-  rightNode->values.assign(values.begin() + values.size() / 2, values.end());
-  keys.erase(keys.begin() + keys.size() / 2, keys.end());
-  values.erase(values.begin() + values.size() / 2, values.end());
+int InternalNode::minSize() const { return (order() + 1) / 2; }
 
-  // link the leaf nodes to form a doubly linked list
-  rightNode->next = next;
-  rightNode->prev = this;
-  next = rightNode;
-  (rightNode->next)->prev = rightNode;
-
-  // return the right leaf node
-  return rightNode;
+int InternalNode::maxSize() const {
+  // Includes the first entry, which
+  // has key DUMMY_KEY and a value that
+  // points to the left of the first positive key k1
+  // (i.e., a node whose keys are all < k1).
+  return order();
 }
 
-// getter function for accessing values
-vector<int> LeafNode::Get_Values() {
-  // return the vector of values
-  return values;
+KeyType InternalNode::keyAt(int aIndex) const {
+  return fMappings[aIndex].first;
 }
 
-// getter function for accessing the next pointer
-Node *LeafNode::Get_Next() {
-  // return the pointer to the next leaf node
-  return next;
+void InternalNode::setKeyAt(int aIndex, KeyType aKey) {
+  fMappings[aIndex].first = aKey;
 }
 
-// function for searching from root to leaf node and pushing on to a stack
-void BPlusTree::Search_Path(Node *node, int key, stack<Node *> *path) {
-  // push node to stack
-  path->push(node);
+Node *InternalNode::firstChild() const { return fMappings.front().second; }
 
-  // check if the node pushed to stack is an internal node
-  if (!node->Get_IsLeaf()) {
-    // search for the given key in the current node
-    vector<int> keys = node->Get_Keys();
-    vector<Node *> children = node->Get_Children();
-    vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
+void InternalNode::populateNewRoot(Node *aOldNode, KeyType aNewKey,
+                                   Node *aNewNode) {
+  fMappings.push_back(std::make_pair(DUMMY_KEY, aOldNode));
+  fMappings.push_back(std::make_pair(aNewKey, aNewNode));
+}
 
-    // check if key is found
-    if (key == keys[index - keys.begin()]) {
-      // recursively repeat by searching the path through the corresponding
-      // right child index
-      Search_Path(children[(index - keys.begin()) + 1], key, path);
+int InternalNode::insertNodeAfter(Node *aOldNode, KeyType aNewKey,
+                                  Node *aNewNode) {
+  auto iter = fMappings.begin();
+  for (; iter != fMappings.end() && iter->second != aOldNode; ++iter)
+    ;
+  fMappings.insert(iter + 1, std::make_pair(aNewKey, aNewNode));
+  return size();
+}
+
+void InternalNode::remove(int aIndex) {
+  fMappings.erase(fMappings.begin() + aIndex);
+}
+
+Node *InternalNode::removeAndReturnOnlyChild() {
+  Node *firstChild = fMappings.front().second;
+  fMappings.pop_back();
+  return firstChild;
+}
+
+KeyType InternalNode::replaceAndReturnFirstKey() {
+  KeyType newKey = fMappings[0].first;
+  fMappings[0].first = DUMMY_KEY;
+  return newKey;
+}
+
+void InternalNode::moveHalfTo(InternalNode *aRecipient) {
+  aRecipient->copyHalfFrom(fMappings);
+  size_t size = fMappings.size();
+  for (size_t i = minSize(); i < size; ++i) {
+    fMappings.pop_back();
+  }
+}
+
+void InternalNode::copyHalfFrom(std::vector<MappingType> &aMappings) {
+  for (size_t i = minSize(); i < aMappings.size(); ++i) {
+    aMappings[i].second->setParent(this);
+    fMappings.push_back(aMappings[i]);
+  }
+}
+
+void InternalNode::moveAllTo(InternalNode *aRecipient, int aIndexInParent) {
+  fMappings[0].first =
+      static_cast<InternalNode *>(parent())->keyAt(aIndexInParent);
+  aRecipient->copyAllFrom(fMappings);
+  fMappings.clear();
+}
+
+void InternalNode::copyAllFrom(std::vector<MappingType> &aMappings) {
+  for (auto mapping : aMappings) {
+    mapping.second->setParent(this);
+    fMappings.push_back(mapping);
+  }
+}
+
+void InternalNode::moveFirstToEndOf(InternalNode *aRecipient) {
+  aRecipient->copyLastFrom(fMappings.front());
+  fMappings.erase(fMappings.begin());
+  static_cast<InternalNode *>(parent())->setKeyAt(1, fMappings.front().first);
+}
+
+void InternalNode::copyLastFrom(MappingType aPair) {
+  fMappings.push_back(aPair);
+  // fMappings.back().first = fMappings.back().second->fMappings.front().first;
+  fMappings.back().first = fMappings.back().second->firstKey();
+  fMappings.back().second->setParent(this);
+}
+
+void InternalNode::moveLastToFrontOf(InternalNode *aRecipient,
+                                     int aParentIndex) {
+  aRecipient->copyFirstFrom(fMappings.back(), aParentIndex);
+  fMappings.pop_back();
+}
+
+void InternalNode::copyFirstFrom(MappingType aPair, int aParentIndex) {
+  fMappings.front().first =
+      static_cast<InternalNode *>(parent())->keyAt(aParentIndex);
+  fMappings.insert(fMappings.begin(), aPair);
+  fMappings.front().first = DUMMY_KEY;
+  fMappings.front().second->setParent(this);
+  static_cast<InternalNode *>(parent())->setKeyAt(aParentIndex,
+                                                  fMappings.front().first);
+}
+
+Node *InternalNode::lookup(KeyType aKey) const {
+  auto locator = fMappings.begin();
+  auto end = fMappings.end();
+  while (locator != end && aKey >= locator->first) {
+    ++locator;
+  }
+  // locator->first is now the least key k such that aKey < k.
+  // One before is the greatest key k such that aKey >= k.
+  --locator;
+  return locator->second;
+}
+
+int InternalNode::nodeIndex(Node *aNode) const {
+  for (size_t i = 0; i < size(); ++i) {
+    if (fMappings[i].second == aNode) {
+      return static_cast<int>(i);
     }
+  }
+  throw NodeNotFoundException(aNode->toString(), toString());
+}
 
-    // if key is not found
-    else {
-      // recursively repeat by searching the path through the corresponding left
-      // child index
-      Search_Path(children[index - keys.begin()], key, path);
+Node *InternalNode::neighbor(int aIndex) const {
+  return fMappings[aIndex].second;
+}
+
+std::string InternalNode::toString(bool aVerbose) const {
+  if (fMappings.empty()) {
+    return "";
+  }
+  std::ostringstream keyToTextConverter;
+  if (aVerbose) {
+    keyToTextConverter << "[" << std::hex << this << std::dec << "]<"
+                       << fMappings.size() << "> ";
+  }
+  auto entry = aVerbose ? fMappings.begin() : fMappings.begin() + 1;
+  auto end = fMappings.end();
+  bool first = true;
+  while (entry != end) {
+    if (first) {
+      first = false;
+    } else {
+      keyToTextConverter << " ";
+    }
+    keyToTextConverter << std::dec << entry->first;
+    if (aVerbose) {
+      keyToTextConverter << "(" << std::hex << entry->second << std::dec << ")";
+    }
+    ++entry;
+  }
+  return keyToTextConverter.str();
+}
+
+void InternalNode::queueUpChildren(std::queue<Node *> *aQueue) {
+  for (auto mapping : fMappings) {
+    aQueue->push(mapping.second);
+  }
+}
+
+const KeyType InternalNode::firstKey() const { return fMappings[1].first; }
+
+// LeafNode.cpp
+LeafNode::LeafNode(int aOrder) : fNext{nullptr}, Node(aOrder) {}
+
+LeafNode::LeafNode(int aOrder, Node *aParent)
+    : fNext{nullptr}, Node(aOrder, aParent) {}
+
+LeafNode::~LeafNode() {
+  for (auto mapping : fMappings) {
+    delete mapping.second;
+  }
+}
+
+bool LeafNode::isLeaf() const { return true; }
+
+LeafNode *LeafNode::next() const { return fNext; }
+
+void LeafNode::setNext(LeafNode *aNext) { fNext = aNext; }
+
+int LeafNode::size() const { return static_cast<int>(fMappings.size()); }
+
+int LeafNode::minSize() const { return order() / 2; }
+
+int LeafNode::maxSize() const { return order() - 1; }
+
+std::string LeafNode::toString(bool aVerbose) const {
+  std::ostringstream keyToTextConverter;
+  if (aVerbose) {
+    keyToTextConverter << "[" << std::hex << this << std::dec << "]<"
+                       << fMappings.size() << "> ";
+  }
+  bool first = true;
+  for (auto mapping : fMappings) {
+    if (first) {
+      first = false;
+    } else {
+      keyToTextConverter << " ";
+    }
+    keyToTextConverter << mapping.first;
+  }
+  if (aVerbose) {
+    keyToTextConverter << "[" << std::hex << fNext << ">";
+  }
+  return keyToTextConverter.str();
+}
+
+int LeafNode::createAndInsertRecord(KeyType aKey, ValueType aValue) {
+  Record *existingRecord = lookup(aKey);
+  if (!existingRecord) {
+    Record *newRecord = new Record(aValue);
+    insert(aKey, newRecord);
+  }
+  return static_cast<int>(fMappings.size());
+}
+
+void LeafNode::insert(KeyType aKey, Record *aRecord) {
+  auto insertionPoint = fMappings.begin();
+  auto end = fMappings.end();
+  while (insertionPoint != end && insertionPoint->first < aKey) {
+    ++insertionPoint;
+  }
+  fMappings.insert(insertionPoint, MappingType(aKey, aRecord));
+}
+
+Record *LeafNode::lookup(KeyType aKey) const {
+  for (auto mapping : fMappings) {
+    if (mapping.first == aKey) {
+      return mapping.second;
+    }
+  }
+  return nullptr;
+}
+
+void LeafNode::copyRangeStartingFrom(KeyType aKey,
+                                     std::vector<EntryType> &aVector) {
+  bool found = false;
+  for (auto mapping : fMappings) {
+    if (mapping.first == aKey) {
+      found = true;
+    }
+    if (found) {
+      aVector.push_back(
+          std::make_tuple(mapping.first, mapping.second->value(), this));
     }
   }
 }
 
-// function to destroy the tree
-void BPlusTree::Destroy(Node *node) {
-  // recursively repeat the function to delete all the nodes level by level,
-  // starting with the leaf nodes
-  if (!node->Get_IsLeaf()) {
-    vector<Node *> children = node->Get_Children();
-    for (vector<Node *>::iterator index = children.begin();
-         index != children.end(); index++) {
-      Destroy(*index);
+void LeafNode::copyRangeUntil(KeyType aKey, std::vector<EntryType> &aVector) {
+  bool found = false;
+  for (auto mapping : fMappings) {
+    if (!found) {
+      aVector.push_back(
+          std::make_tuple(mapping.first, mapping.second->value(), this));
     }
-  }
-  delete (node);
-}
-
-// operation: Initialize(m)
-void BPlusTree::Initialize(int m) {
-  order = m;
-  root = NULL;
-}
-
-// operation: Insert(key, value)
-void BPlusTree::Insert(int key, int value) {
-  // check if tree is empty
-  if (NULL == root) {
-    // Irrespective of the order, root is always a leaf node for
-    // the first insertion. So, create a new leaf node.
-    root = new LeafNode;
-    root->Insert(key, value);
-  }
-
-  // if it is a subsequent insertion
-  else {
-    Node *leftNode = NULL;
-    Node *rightNode = NULL;
-    int *keyToParent = new int;
-    bool rootPopped = false;
-
-    // obtain the search path from the root to leaf node and push it on to a
-    // stack
-    stack<Node *> *path = new stack<Node *>;
-    Search_Path(root, key, path);
-
-    // insert the key-value pair in the leaf node
-    path->top()->Insert(key, value);
-
-    // Split the current node and insert the middle key & children in to the
-    // parent. Perform this as long as there is an imbalance in the tree, moving
-    // up the stack every iteration.
-    while (path->top()->Get_Keys().size() == order) {
-      // Update the current node as the left half and return the right half.
-      // Also obtain the middle element, which is the key to be moved up to the
-      // parent.
-      leftNode = path->top();
-      rightNode = leftNode->Split(keyToParent);
-
-      // check if currently split node is not the root node
-      path->pop();
-      if (!path->empty()) {
-        // Insert the middle key and the right half in to
-        // the parent. The parent will be an internal node.
-        path->top()->Insert(*keyToParent, rightNode);
-      }
-
-      // if currently split node is the root node
-      else {
-        // set flag indicating that the root has popped from the stack
-        rootPopped = true;
-        break;
-      }
+    if (mapping.first == aKey) {
+      found = true;
     }
-
-    // new internal node needs to be created and assigned as the root
-    if (rootPopped) {
-      // create a new internal node
-      InternalNode *tempRoot = new InternalNode;
-
-      // insert the left and the right halves as the children of this new
-      // internal node
-      tempRoot->Insert(*keyToParent, leftNode, rightNode);
-
-      // mark this new internal node as the root of the tree
-      root = tempRoot;
-    }
-
-    delete (keyToParent);
-    delete (path);
   }
 }
 
-// operation: Search(key)
-int BPlusTree::Search(int key) {
-  // check if tree is empty
-  if (NULL == root) {
+void LeafNode::copyRange(std::vector<EntryType> &aVector) {
+  for (auto mapping : fMappings) {
+    aVector.push_back(
+        std::make_tuple(mapping.first, mapping.second->value(), this));
+  }
+}
+
+int LeafNode::removeAndDeleteRecord(KeyType aKey) {
+  auto removalPoint = fMappings.begin();
+  auto end = fMappings.end();
+  while (removalPoint != end && removalPoint->first != aKey) {
+    ++removalPoint;
+  }
+  if (removalPoint == end) {
+    throw RecordNotFoundException(aKey);
+  }
+  auto record = *removalPoint;
+  fMappings.erase(removalPoint);
+  delete record.second;
+  return static_cast<int>(fMappings.size());
+}
+
+const KeyType LeafNode::firstKey() const { return fMappings[0].first; }
+
+void LeafNode::moveHalfTo(LeafNode *aRecipient) {
+  aRecipient->copyHalfFrom(fMappings);
+  size_t size = fMappings.size();
+  for (size_t i = minSize(); i < size; ++i) {
+    fMappings.pop_back();
+  }
+}
+
+void LeafNode::copyHalfFrom(
+    std::vector<std::pair<KeyType, Record *>> &aMappings) {
+  for (size_t i = minSize(); i < aMappings.size(); ++i) {
+    fMappings.push_back(aMappings[i]);
+  }
+}
+
+void LeafNode::moveAllTo(LeafNode *aRecipient, int) {
+  aRecipient->copyAllFrom(fMappings);
+  fMappings.clear();
+  aRecipient->setNext(next());
+}
+
+void LeafNode::copyAllFrom(
+    std::vector<std::pair<KeyType, Record *>> &aMappings) {
+  for (auto mapping : aMappings) {
+    fMappings.push_back(mapping);
+  }
+}
+
+void LeafNode::moveFirstToEndOf(LeafNode *aRecipient) {
+  aRecipient->copyLastFrom(fMappings.front());
+  fMappings.erase(fMappings.begin());
+  static_cast<InternalNode *>(parent())->setKeyAt(1, fMappings.front().first);
+}
+
+void LeafNode::copyLastFrom(MappingType aPair) { fMappings.push_back(aPair); }
+
+void LeafNode::moveLastToFrontOf(LeafNode *aRecipient, int aParentIndex) {
+  aRecipient->copyFirstFrom(fMappings.back(), aParentIndex);
+  fMappings.pop_back();
+}
+
+void LeafNode::copyFirstFrom(MappingType aPair, int aParentIndex) {
+  fMappings.insert(fMappings.begin(), aPair);
+  static_cast<InternalNode *>(parent())->setKeyAt(aParentIndex,
+                                                  fMappings.front().first);
+}
+
+// Printer.cpp
+Printer::Printer() : fVerbose(false) {}
+
+bool Printer::verbose() const { return fVerbose; }
+
+void Printer::setVerbose(bool aVerbose) { fVerbose = aVerbose; }
+
+void Printer::printTree(Node *aRoot) const {
+  if (!aRoot) {
+    printEmptyTree();
+  } else {
+    printNonEmptyTree(aRoot);
+  }
+}
+
+void Printer::printEmptyTree() const {
+  std::cout << "Empty tree." << std::endl;
+}
+
+void Printer::printNonEmptyTree(Node *aRoot) const {
+  std::queue<Node *> queue0;
+  std::queue<Node *> queue1;
+  auto currentRank = &queue0;
+  auto nextRank = &queue1;
+  currentRank->push(aRoot);
+  while (!currentRank->empty()) {
+    printCurrentRank(currentRank, nextRank);
+    auto tmp = currentRank;
+    currentRank = nextRank;
+    nextRank = tmp;
+  }
+}
+
+void Printer::printCurrentRank(std::queue<Node *> *aCurrentRank,
+                               std::queue<Node *> *aNextRank) const {
+  std::cout << "|";
+  while (!aCurrentRank->empty()) {
+    Node *currentNode = aCurrentRank->front();
+    std::cout << " " << currentNode->toString(verbose());
+    std::cout << " |";
+    if (!currentNode->isLeaf()) {
+      auto internalNode = static_cast<InternalNode *>(currentNode);
+      internalNode->queueUpChildren(aNextRank);
+    }
+    aCurrentRank->pop();
+  }
+  std::cout << std::endl;
+}
+
+void Printer::printLeaves(Node *aRoot) {
+  if (!aRoot) {
+    printEmptyTree();
+    return;
+  }
+  auto node = aRoot;
+  while (!node->isLeaf()) {
+    node = static_cast<InternalNode *>(node)->firstChild();
+  }
+  auto leafNode = static_cast<LeafNode *>(node);
+  while (leafNode) {
+    std::cout << "| ";
+    std::cout << leafNode->toString(fVerbose);
+    leafNode = leafNode->next();
+  }
+  std::cout << " |" << std::endl;
+}
+
+// Exceptions.cpp
+LeafNotFoundException::LeafNotFoundException(KeyType aKey) : fKey{aKey} {}
+
+const char *LeafNotFoundException::what() const noexcept {
+  std::ostringstream ss;
+  ss << "Key not found in any leaf node:  ";
+  ss << fKey;
+  static std::string message;
+  message = ss.str();
+  return message.c_str();
+}
+
+NodeNotFoundException::NodeNotFoundException(std::string aSearchedNode,
+                                             std::string aContainingNode)
+    : fSearchedNode{aSearchedNode}, fContainingNode{aContainingNode} {}
+
+const char *NodeNotFoundException::what() const noexcept {
+  std::ostringstream ss;
+  ss << "Node |" << fSearchedNode << "| not found";
+  ss << " as a child of node ";
+  ss << fContainingNode;
+  static std::string message;
+  message = ss.str();
+  return message.c_str();
+}
+
+RecordNotFoundException::RecordNotFoundException(KeyType aKey) : fKey{aKey} {}
+
+const char *RecordNotFoundException::what() const noexcept {
+  std::ostringstream ss;
+  ss << "Record not found with key:  " << fKey;
+  static std::string message;
+  message = ss.str();
+  return message.c_str();
+}
+
+// BPlusTree.cpp
+BPlusTree::BPlusTree(int aOrder) : fOrder{aOrder}, fRoot{nullptr} {}
+
+bool BPlusTree::isEmpty() const { return !fRoot; }
+
+// INSERTION
+
+void BPlusTree::insert(KeyType aKey, ValueType aValue) {
+  if (isEmpty()) {
+    keyMin = aKey;
+    keyMax = aKey;
+    startNewTree(aKey, aValue);
+  } else {
+    if (aKey < keyMin)
+      keyMin = aKey;
+    if (aKey > keyMax)
+      keyMax = aKey;
+    insertIntoLeaf(aKey, aValue);
+  }
+}
+
+void BPlusTree::startNewTree(KeyType aKey, ValueType aValue) {
+  LeafNode *newLeafNode = new LeafNode(fOrder);
+  newLeafNode->createAndInsertRecord(aKey, aValue);
+  fRoot = newLeafNode;
+}
+
+void BPlusTree::insertIntoLeaf(KeyType aKey, ValueType aValue) {
+  LeafNode *leafNode = findLeafNode(aKey);
+  if (!leafNode) {
+    throw LeafNotFoundException(aKey);
+  }
+  Record *record = leafNode->lookup(aKey);
+  if (record) {
+    record->setValue(aValue);
+    return;
+  }
+  int newSize = leafNode->createAndInsertRecord(aKey, aValue);
+  if (newSize > leafNode->maxSize()) {
+    LeafNode *newLeaf = split(leafNode);
+    newLeaf->setNext(leafNode->next());
+    leafNode->setNext(newLeaf);
+    KeyType newKey = newLeaf->firstKey();
+    insertIntoParent(leafNode, newKey, newLeaf);
+  }
+}
+
+void BPlusTree::insertIntoParent(Node *aOldNode, KeyType aKey, Node *aNewNode) {
+  InternalNode *parent = static_cast<InternalNode *>(aOldNode->parent());
+  if (parent == nullptr) {
+    fRoot = new InternalNode(fOrder);
+    parent = static_cast<InternalNode *>(fRoot);
+    aOldNode->setParent(parent);
+    aNewNode->setParent(parent);
+    parent->populateNewRoot(aOldNode, aKey, aNewNode);
+  } else {
+    int newSize = parent->insertNodeAfter(aOldNode, aKey, aNewNode);
+    if (newSize > parent->maxSize()) {
+      InternalNode *newNode = split(parent);
+      KeyType newKey = newNode->replaceAndReturnFirstKey();
+      insertIntoParent(parent, newKey, newNode);
+    }
+  }
+}
+
+template <typename T> T *BPlusTree::split(T *aNode) {
+  T *newNode = new T(fOrder, aNode->parent());
+  aNode->moveHalfTo(newNode);
+  return newNode;
+}
+
+// REMOVAL
+
+void BPlusTree::remove(KeyType aKey) {
+  if (isEmpty()) {
+    return;
+  } else {
+    removeFromLeaf(aKey);
+  }
+}
+
+void BPlusTree::removeFromLeaf(KeyType aKey) {
+  LeafNode *leafNode = findLeafNode(aKey);
+  if (!leafNode) {
+    return;
+  }
+  if (!leafNode->lookup(aKey)) {
+    return;
+  }
+  int newSize = leafNode->removeAndDeleteRecord(aKey);
+  if (newSize < leafNode->minSize()) {
+    coalesceOrRedistribute(leafNode);
+  }
+}
+
+template <typename N> void BPlusTree::coalesceOrRedistribute(N *aNode) {
+  if (aNode->isRoot()) {
+    adjustRoot();
+    return;
+  }
+  auto parent = static_cast<InternalNode *>(aNode->parent());
+  int indexOfNodeInParent = parent->nodeIndex(aNode);
+  int neighborIndex = (indexOfNodeInParent == 0) ? 1 : indexOfNodeInParent - 1;
+  N *neighborNode = static_cast<N *>(parent->neighbor(neighborIndex));
+  if (aNode->size() + neighborNode->size() <= neighborNode->maxSize()) {
+    coalesce(neighborNode, aNode, parent, indexOfNodeInParent);
+  } else {
+    redistribute(neighborNode, aNode, parent, indexOfNodeInParent);
+  }
+}
+
+template <typename N>
+void BPlusTree::coalesce(N *aNeighborNode, N *aNode, InternalNode *aParent,
+                         int aIndex) {
+  if (aIndex == 0) {
+    std::swap(aNode, aNeighborNode);
+    aIndex = 1;
+  }
+  aNode->moveAllTo(aNeighborNode, aIndex);
+  aParent->remove(aIndex);
+  if (aParent->size() < aParent->minSize()) {
+    coalesceOrRedistribute(aParent);
+  }
+  delete aNode;
+}
+
+template <typename N>
+void BPlusTree::redistribute(N *aNeighborNode, N *aNode, InternalNode *aParent,
+                             int aIndex) {
+  if (aIndex == 0) {
+    aNeighborNode->moveFirstToEndOf(aNode);
+  } else {
+    aNeighborNode->moveLastToFrontOf(aNode, aIndex);
+  }
+}
+
+void BPlusTree::adjustRoot() {
+  if (!fRoot->isLeaf() && fRoot->size() == 1) {
+    auto discardedNode = static_cast<InternalNode *>(fRoot);
+    fRoot = static_cast<InternalNode *>(fRoot)->removeAndReturnOnlyChild();
+    fRoot->setParent(nullptr);
+    delete discardedNode;
+  } else if (!fRoot->size()) {
+    delete fRoot;
+    fRoot = nullptr;
+  }
+}
+
+// UTILITIES AND PRINTING
+
+LeafNode *BPlusTree::findLeafNode(KeyType aKey, bool aPrinting, bool aVerbose) {
+  if (isEmpty()) {
+    if (aPrinting) {
+      std::cout << "Not found: empty tree." << std::endl;
+    }
+    return nullptr;
+  }
+  auto node = fRoot;
+  if (aPrinting) {
+    std::cout << "Root: ";
+    if (fRoot->isLeaf()) {
+      std::cout << "\t" << static_cast<LeafNode *>(fRoot)->toString(aVerbose);
+    } else {
+      std::cout << "\t"
+                << static_cast<InternalNode *>(fRoot)->toString(aVerbose);
+    }
+    std::cout << std::endl;
+  }
+  while (!node->isLeaf()) {
+    auto internalNode = static_cast<InternalNode *>(node);
+    if (aPrinting && node != fRoot) {
+      std::cout << "\tNode: " << internalNode->toString(aVerbose) << std::endl;
+    }
+    node = internalNode->lookup(aKey);
+  }
+  return static_cast<LeafNode *>(node);
+}
+
+void BPlusTree::readInputFromFile(std::string aFileName) {
+  int key;
+  std::ifstream input(aFileName);
+  while (input) {
+    input >> key;
+    insert(key, key);
+  }
+}
+
+void BPlusTree::print(bool aVerbose) {
+  fPrinter.setVerbose(aVerbose);
+  fPrinter.printTree(fRoot);
+}
+
+void BPlusTree::printLeaves(bool aVerbose) {
+  fPrinter.setVerbose(aVerbose);
+  fPrinter.printLeaves(fRoot);
+}
+
+void BPlusTree::destroyTree() {
+  if (fRoot->isLeaf()) {
+    delete static_cast<LeafNode *>(fRoot);
+  } else {
+    delete static_cast<InternalNode *>(fRoot);
+  }
+  fRoot = nullptr;
+}
+
+void BPlusTree::printValue(KeyType aKey, bool aVerbose) {
+  printValue(aKey, false, aVerbose);
+}
+
+void BPlusTree::printValue(KeyType aKey, bool aPrintPath, bool aVerbose) {
+  LeafNode *leaf = findLeafNode(aKey, aPrintPath, aVerbose);
+  if (!leaf) {
+    std::cout << "Leaf not found with key " << aKey << "." << std::endl;
+    return;
+  }
+  if (aPrintPath) {
+    std::cout << "\t";
+  }
+  std::cout << "Leaf: " << leaf->toString(aVerbose) << std::endl;
+  Record *record = leaf->lookup(aKey);
+  if (!record) {
+    std::cout << "Record not found with key " << aKey << "." << std::endl;
+    return;
+  }
+  if (aPrintPath) {
+    std::cout << "\t";
+  }
+  std::cout << "Record found at location " << std::hex << record << std::dec
+            << ":" << std::endl;
+  std::cout << "\tKey: " << aKey << "   Value: " << record->value()
+            << std::endl;
+}
+
+void BPlusTree::printPathTo(KeyType aKey, bool aVerbose) {
+  printValue(aKey, true, aVerbose);
+}
+
+void BPlusTree::printRange(KeyType aStart, KeyType aEnd) {
+  auto rangeVector = range(aStart, aEnd);
+  for (auto entry : rangeVector) {
+    std::cout << "Key: " << std::get<0>(entry);
+    std::cout << "    Value: " << std::get<1>(entry);
+    std::cout << "    Leaf: " << std::hex << std::get<2>(entry) << std::dec
+              << std::endl;
+  }
+}
+
+std::vector<BPlusTree::EntryType> BPlusTree::range(KeyType aStart,
+                                                   KeyType aEnd) {
+  auto startLeaf = findLeafNode(aStart);
+  auto endLeaf = findLeafNode(aEnd);
+  std::vector<std::tuple<KeyType, ValueType, LeafNode *>> entries;
+  if (!startLeaf || !endLeaf) {
+    return entries;
+  }
+  startLeaf->copyRangeStartingFrom(aStart, entries);
+  startLeaf = startLeaf->next();
+  while (startLeaf != endLeaf) {
+    startLeaf->copyRange(entries);
+    startLeaf = startLeaf->next();
+  }
+  startLeaf->copyRangeUntil(aEnd, entries);
+  return entries;
+}
+
+int BPlusTree::findValueByKey(int aKey) {
+  LeafNode *leaf = findLeafNode(aKey, false, false);
+  if (!leaf) {
     return -1;
   }
-
-  // if it is a vaild search
-  else {
-    int value;
-
-    // obtain the search path from root to leaf node and push it on to a stack
-    stack<Node *> *path = new stack<Node *>;
-    Search_Path(root, key, path);
-
-    // search for the key in the leaf node, which is at the top of the stack
-    vector<int> keys = path->top()->Get_Keys();
-    vector<int> values = path->top()->Get_Values();
-    vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key);
-
-    // check if key is found
-    if (key == keys[index - keys.begin()]) {
-      value = values[index - keys.begin()];
-    }
-
-    // if key is not found
-    else {
-      value = -1;
-    }
-
-    delete (path);
-
-    // return value
-    return value;
+  Record *record = leaf->lookup(aKey);
+  if (!record) {
+    return -1;
   }
+  return record->value();
 }
 
-// operation: Search(key1, key2)
-vector<pair<int, int>> BPlusTree::Search(int key1, int key2) {
-  vector<pair<int, int>> ret;
+int BPlusTree::maxValueInRange(int aStart, int aEnd) {
+  int start = (aStart - DEVIATION < keyMin) ? keyMin : aStart - DEVIATION;
+  int end = (aEnd + DEVIATION > keyMax) ? keyMax : aEnd + DEVIATION;
 
-  // check if tree is empty
-  if (NULL == root) {
-    ret.push_back(pair<int, int>(-1, -1));
+  auto rangeVector = range(start, end);
+  int maxValue = -1;
+  for (auto entry : rangeVector) {
+    if (std::get<0>(entry) < aStart || std::get<0>(entry) > aEnd)
+      continue;
+    if (std::get<1>(entry) > maxValue)
+      maxValue = std::get<1>(entry);
   }
-
-  // if it is a valid range search
-  else {
-    int i = 0;
-    bool firstPass = true;
-    int firstKey = ERROR;
-
-    // obtain the search path from root to leaf node and push it on to a stack
-    stack<Node *> *path = new stack<Node *>;
-    Search_Path(root, key1, path);
-
-    // search for the key in the leaf node, which is at the top of the stack
-    vector<int> keys = path->top()->Get_Keys();
-    vector<int> values = path->top()->Get_Values();
-    Node *next = path->top()->Get_Next();
-    vector<int>::iterator index = lower_bound(keys.begin(), keys.end(), key1);
-
-    // display all the keys in the search range, along with their corresponding
-    // values
-    while (1) {
-      // check if end of the current leaf node is reached
-      if ((index - keys.begin()) == keys.size()) {
-        // go to the next leaf node
-        keys = next->Get_Keys();
-        values = next->Get_Values();
-        next = next->Get_Next();
-        index = keys.begin();
-      }
-
-      // save the smallest key in the given search range
-      if (firstPass) {
-        firstKey = keys[index - keys.begin()];
-      }
-
-      // check if already iterated through the doubly linked list once
-      if (!(firstPass || (keys[index - keys.begin()] != firstKey))) {
-        // exit the loop
-        break;
-      }
-
-      // check if key is within the search range
-      if ((key1 <= keys[index - keys.begin()]) &&
-          (keys[index - keys.begin()] <= key2)) {
-        if (!firstPass) {
-          ;
-        }
-
-        // store the key and its last value
-        ret.push_back(pair<int, int>(keys[index - keys.begin()],
-                                     values[index - keys.begin()]));
-      }
-
-      // if key is not within the search range
-      else {
-        // check if at least one key was in the search range
-        if (!firstPass) {
-          ;
-        }
-
-        // if no keys belonged within the search range
-        else {
-          ret.push_back(pair<int, int>(-1, -1));
-        }
-
-        // exit the loop
-        break;
-      }
-
-      firstPass = false;
-      index++;
-    }
-
-    delete (path);
-  }
-
-  return ret;
+  return maxValue;
 }
 
-// destructor for tree
-BPlusTree::~BPlusTree() { Destroy(root); }
-
-Index::Index(int &num_rows, vector<int> &key, vector<int> &value) {
-  tree.Initialize(DEFAULT_ORDER);
+// Index.cpp
+Index::Index(int &num_rows, std::vector<int> &key, std::vector<int> &value) {
   for (int i = 0; i < num_rows; i++) {
-    tree.Insert(key.at(i), value.at(i));
+    tree.insert(key.at(i), value.at(i));
   }
 }
 
-void Index::key_query(vector<int> &query_keys) {
+void Index::key_query(std::vector<int> &query_keys) {
   // open output file for writing
-  ofstream outputFile;
-  outputFile.open("key_query_out.txt", ios::out | ios::trunc);
+  std::ofstream outputFile;
+  outputFile.open("key_query_out.txt", std::ios::out | std::ios::trunc);
 
   for (int i = 0; i < query_keys.size(); i++) {
-    outputFile << tree.Search(query_keys.at(i)) << endl;
+    outputFile << tree.findValueByKey(query_keys.at(i)) << std::endl;
   }
 
   // close the output file
   outputFile.close();
 }
 
-void Index::range_query(vector<pair<int, int>> &query_pairs) {
+void Index::range_query(std::vector<std::pair<int, int>> &query_pairs) {
   // open output file for writing
-  ofstream outputFile;
-  outputFile.open("range_query_out.txt", ios::out | ios::trunc);
+  std::ofstream outputFile;
+  outputFile.open("range_query_out.txt", std::ios::out | std::ios::trunc);
 
   for (int i = 0; i < query_pairs.size(); i++) {
-    vector<pair<int, int>> v =
-        tree.Search(query_pairs.at(i).first, query_pairs.at(i).second);
-    int biggest_result = -1;
-    for (int j = 0; j < v.size(); j++)
-      if (v[j].second > biggest_result)
-        biggest_result = v[j].second;
-    outputFile << biggest_result << endl;
+    outputFile << tree.maxValueInRange(query_pairs.at(i).first,
+                                       query_pairs.at(i).second)
+               << std::endl;
   }
 
   // close the output file
   outputFile.close();
 }
 
-void Index::clear_index() {
-  // release memory in BPlusTree destructor
-}
+void Index::clear_index() { tree.destroyTree(); }
