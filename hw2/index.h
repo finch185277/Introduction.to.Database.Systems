@@ -3,16 +3,13 @@
 #ifndef INDEX_H_
 #define INDEX_H_
 
-// uncomment for debug mode
-//#define DEBUG
-
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <stack>
 #include <vector>
 
-#define DEFAULT_ORDER 3
+#define DEFAULT_ORDER 132
 #define ERROR -1
 
 using namespace std;
