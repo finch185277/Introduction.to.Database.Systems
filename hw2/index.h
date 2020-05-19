@@ -1,4 +1,4 @@
-// ref: https://github.com/deepaktabraham/BPlus-Tree
+// ref: http://www.amittai.com/prose/bplustree_cpp.html
 
 #ifndef INDEX_H_
 #define INDEX_H_
@@ -11,13 +11,12 @@
 #include <utility>
 #include <vector>
 
-#define VERSION "2.1.0"
-
 const int DEFAULT_ORDER{4};
+const int DEVIATION{DEFAULT_ORDER * 4};
 
 // Minimum order is necessarily 3.  We set the maximum
 // order arbitrarily.  You may change the maximum order.
-const int MIN_ORDER{DEFAULT_ORDER - 1};
+const int MIN_ORDER{3};
 const int MAX_ORDER{20};
 
 // Size of the buffer used to get the arguments (1 or 2) of the

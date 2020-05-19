@@ -1,3 +1,5 @@
+// ref: http://www.amittai.com/prose/bplustree_cpp.html
+
 #include "index.h"
 #include <fstream>
 #include <iostream>
@@ -767,12 +769,14 @@ int BPlusTree::findValueByKey(int aKey) {
 }
 
 int BPlusTree::maxValueInRange(int aStart, int aEnd) {
-  int start = (aStart < keyMin) ? keyMin : aStart;
-  int end = (aEnd > keyMax) ? keyMax : aEnd;
+  int start = (aStart - DEVIATION < keyMin) ? keyMin : aStart - DEVIATION;
+  int end = (aEnd + DEVIATION > keyMax) ? keyMax : aEnd + DEVIATION;
 
   auto rangeVector = range(start, end);
   int maxValue = -1;
   for (auto entry : rangeVector) {
+    if (std::get<0>(entry) < aStart || std::get<0>(entry) > aEnd)
+      continue;
     if (std::get<1>(entry) > maxValue)
       maxValue = std::get<1>(entry);
   }
