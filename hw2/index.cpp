@@ -497,8 +497,14 @@ bool BPlusTree::isEmpty() const { return !fRoot; }
 
 void BPlusTree::insert(KeyType aKey, ValueType aValue) {
   if (isEmpty()) {
+    keyMin = aKey;
+    keyMax = aKey;
     startNewTree(aKey, aValue);
   } else {
+    if (aKey < keyMin)
+      keyMin = aKey;
+    if (aKey > keyMax)
+      keyMax = aKey;
     insertIntoLeaf(aKey, aValue);
   }
 }
@@ -747,3 +753,65 @@ std::vector<BPlusTree::EntryType> BPlusTree::range(KeyType aStart,
   startLeaf->copyRangeUntil(aEnd, entries);
   return entries;
 }
+
+int BPlusTree::findValueByKey(int aKey) {
+  LeafNode *leaf = findLeafNode(aKey, false, false);
+  if (!leaf) {
+    return -1;
+  }
+  Record *record = leaf->lookup(aKey);
+  if (!record) {
+    return -1;
+  }
+  return record->value();
+}
+
+int BPlusTree::maxValueInRange(int aStart, int aEnd) {
+  int start = (aStart < keyMin) ? keyMin : aStart;
+  int end = (aEnd > keyMax) ? keyMax : aEnd;
+
+  auto rangeVector = range(start, end);
+  int maxValue = -1;
+  for (auto entry : rangeVector) {
+    if (std::get<1>(entry) > maxValue)
+      maxValue = std::get<1>(entry);
+  }
+  return maxValue;
+}
+
+// Index.cpp
+Index::Index(int &num_rows, std::vector<int> &key, std::vector<int> &value) {
+  for (int i = 0; i < num_rows; i++) {
+    tree.insert(key.at(i), value.at(i));
+  }
+}
+
+void Index::key_query(std::vector<int> &query_keys) {
+  // open output file for writing
+  std::ofstream outputFile;
+  outputFile.open("key_query_out.txt", std::ios::out | std::ios::trunc);
+
+  for (int i = 0; i < query_keys.size(); i++) {
+    outputFile << tree.findValueByKey(query_keys.at(i)) << std::endl;
+  }
+
+  // close the output file
+  outputFile.close();
+}
+
+void Index::range_query(std::vector<std::pair<int, int>> &query_pairs) {
+  // open output file for writing
+  std::ofstream outputFile;
+  outputFile.open("range_query_out.txt", std::ios::out | std::ios::trunc);
+
+  for (int i = 0; i < query_pairs.size(); i++) {
+    outputFile << tree.maxValueInRange(query_pairs.at(i).first,
+                                       query_pairs.at(i).second)
+               << std::endl;
+  }
+
+  // close the output file
+  outputFile.close();
+}
+
+void Index::clear_index() { tree.destroyTree(); }

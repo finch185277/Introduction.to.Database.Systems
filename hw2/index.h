@@ -243,6 +243,9 @@ public:
   /// under which to store it.
   void readInputFromFile(std::string aFileName);
 
+  int findValueByKey(int aKey);
+  int maxValueInRange(int aStart, int aEnd);
+
 private:
   void startNewTree(KeyType aKey, ValueType aValue);
   void insertIntoLeaf(KeyType aKey, ValueType aValue);
@@ -263,6 +266,20 @@ private:
   const int fOrder;
   Node *fRoot;
   Printer fPrinter;
+  int keyMin;
+  int keyMax;
+};
+
+// Index.hpp
+class Index {
+private:
+  BPlusTree tree;
+
+public:
+  Index(int &num_rows, std::vector<int> &key, std::vector<int> &value);
+  void key_query(std::vector<int> &query_keys);
+  void range_query(std::vector<std::pair<int, int>> &query_pairs);
+  void clear_index();
 };
 
 #endif
