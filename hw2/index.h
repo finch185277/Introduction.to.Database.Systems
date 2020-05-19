@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-const int DEFAULT_ORDER{4};
+const int DEFAULT_ORDER{16};
 const int DEVIATION{DEFAULT_ORDER * 4};
 
 // Minimum order is necessarily 3.  We set the maximum
