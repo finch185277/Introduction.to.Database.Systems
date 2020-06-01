@@ -36,13 +36,11 @@ int main(int argc, char **argv) {
   std::getline(std::cin, line); // read line break
   while (std::getline(std::cin, line)) {
     struct Job job;
+    job.id = job_idx;
     bool is_left = true;
     bool is_right = false;
     std::stringstream ss(line);
     std::string token;
-
-    job.id = job_idx;
-
     while (std::getline(ss, token, ' ')) {
       // store tokens
       if (is_right) {
@@ -51,7 +49,6 @@ int main(int argc, char **argv) {
         if (token == "=")
           is_right = true;
       }
-
       // set dependency
       if (is_left) {
         int left_var = stoi(token.substr(1, token.size() - 1));
@@ -65,11 +62,8 @@ int main(int argc, char **argv) {
         }
       }
     }
-
     dep_list.at(job.left) = job_idx;
-
     job_list.push_back(job);
-
     job_idx++;
   }
 
