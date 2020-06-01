@@ -164,6 +164,7 @@ int main(int argc, char **argv) {
   while (std::getline(std::cin, line)) {
     struct Job job;
     job.id = job_idx;
+    job.is_taken = false;
     bool is_left = true;
     bool is_right = false;
     std::stringstream ss(line);
