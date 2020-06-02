@@ -84,17 +84,9 @@ void job_dispatcher(std::vector<struct Job> &job_list,
                     std::vector<struct Job> &pending_job,
                     std::vector<bool> &done_list) {
   // send every possible job into pending list
-  int first_round_job = 0;
   for (int i = 0; i < job_list.size(); i++) {
-    // check whether need wait other jobs done
-    bool is_unsolved_dep = false;
-    for (auto dep : job_list.at(i).dependency) {
-      if (!done_list.at(dep)) {
-        is_unsolved_dep = true;
-        break;
-      }
-    }
-    if (is_unsolved_dep)
+    // check whether depend on other jobs
+    if (!job_list.at(i).dependency.empty())
       continue;
 
     // send job into pending list
@@ -104,11 +96,10 @@ void job_dispatcher(std::vector<struct Job> &job_list,
     sem_post(&is_job_ready);
 
     job_list.at(i).is_taken = true;
-    first_round_job++;
   }
 
   // get job done semaphore and send one possible job
-  for (int remain_jobs = job_list.size() - first_round_job; remain_jobs > 0;) {
+  for (int remain_jobs = job_list.size(); remain_jobs > 0; remain_jobs--) {
     sem_wait(&is_job_done);
     sem_wait(&mutux_done_list);
     for (int i = 0; i < job_list.size(); i++) {
@@ -134,8 +125,6 @@ void job_dispatcher(std::vector<struct Job> &job_list,
       sem_post(&is_job_ready);
 
       job_list.at(i).is_taken = true;
-      remain_jobs--;
-      break;
     }
     sem_post(&mutux_done_list);
   }
@@ -157,7 +146,7 @@ int main(int argc, char **argv) {
 
   // build job list
   std::vector<Job> job_list;
-  std::vector<int> dep_list(var_num, -1);
+  std::vector<std::vector<int>> dep_list(var_num);
   int job_idx = 0;
   std::string line;
   std::getline(std::cin, line); // read line break
@@ -185,12 +174,13 @@ int main(int argc, char **argv) {
       } else {
         if (token[0] == '$') {
           int right_var = stoi(token.substr(1, token.size() - 1));
-          if (dep_list.at(right_var) != -1)
-            job.dependency.insert(dep_list.at(right_var));
+          if (dep_list.at(right_var).size() > 0)
+            for (auto job_id : dep_list.at(right_var))
+              job.dependency.insert(job_id);
         }
       }
     }
-    dep_list.at(job.left) = job_idx;
+    dep_list.at(job.left).push_back(job_idx);
     job_list.push_back(job);
     job_idx++;
   }
