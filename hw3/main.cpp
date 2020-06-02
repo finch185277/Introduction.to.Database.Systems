@@ -8,7 +8,7 @@
 #include <vector>
 
 sem_t is_job_ready, is_job_done;
-sem_t mutux_pending_job, mutux_done_list;
+sem_t mutux_pending_job, mutux_done_list, mutux_var_list;
 
 struct Job {
   int id;
@@ -45,7 +45,9 @@ void job_worker(std::vector<int> *nums, struct Job &job) {
         result -= stoi(job.right.at(i));
     }
   }
+  sem_wait(&mutux_var_list);
   nums->at(job.left) = result;
+  sem_post(&mutux_var_list);
 }
 
 void job_manager(std::vector<int> *nums, std::vector<struct Job> *pending_job,
@@ -156,6 +158,7 @@ int main(int argc, char **argv) {
     job.is_taken = false;
     bool is_left = true;
     bool is_right = false;
+    std::vector<int> right_var_vec;
     std::stringstream ss(line);
     std::string token;
     while (std::getline(ss, token, ' ')) {
@@ -170,17 +173,26 @@ int main(int argc, char **argv) {
       if (is_left) {
         int left_var = stoi(token.substr(1, token.size() - 1));
         job.left = left_var;
+        if (dep_list.at(left_var).size() > 0)
+          for (auto job_id : dep_list.at(left_var))
+            job.dependency.insert(job_id);
         is_left = false;
       } else {
         if (token[0] == '$') {
           int right_var = stoi(token.substr(1, token.size() - 1));
+          right_var_vec.push_back(right_var);
           if (dep_list.at(right_var).size() > 0)
             for (auto job_id : dep_list.at(right_var))
               job.dependency.insert(job_id);
         }
       }
     }
+    // push job id into dep list
+    for (int right_var : right_var_vec)
+      dep_list.at(right_var).push_back(job_idx);
     dep_list.at(job.left).push_back(job_idx);
+
+    // push job into job list
     job_list.push_back(job);
     job_idx++;
   }
@@ -208,6 +220,7 @@ int main(int argc, char **argv) {
   sem_init(&is_job_done, 0, 0);
   sem_init(&mutux_pending_job, 0, 1);
   sem_init(&mutux_done_list, 0, 1);
+  sem_init(&mutux_var_list, 0, 1);
 
   // create a new thread pool
   for (int i = 0; i < thread_nums; i++) {
