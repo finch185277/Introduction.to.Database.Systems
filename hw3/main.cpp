@@ -8,7 +8,7 @@
 #include <vector>
 
 sem_t is_job_ready, is_job_done;
-sem_t mutux_pending_job, mutux_done_list;
+sem_t mutex_pending_job, mutex_done_list;
 
 struct Job {
   int id;
@@ -51,22 +51,22 @@ void job_worker(std::vector<int> *nums, struct Job &job) {
 void job_manager(std::vector<int> *nums, std::vector<struct Job> *pending_job,
                  std::vector<bool> *done_list) {
   // find non-taken job, and mark that job as taken
-  sem_wait(&mutux_pending_job);
+  sem_wait(&mutex_pending_job);
   int idx = 0;
   for (; idx < pending_job->size(); idx++)
     if (pending_job->at(idx).is_taken == false)
       break;
   int job_id = pending_job->at(idx).id;
   pending_job->at(idx).is_taken = true;
-  sem_post(&mutux_pending_job);
+  sem_post(&mutex_pending_job);
 
   // do the job
   job_worker(nums, pending_job->at(idx));
 
   // mark complete job as done
-  sem_wait(&mutux_done_list);
+  sem_wait(&mutex_done_list);
   done_list->at(job_id) = true;
-  sem_post(&mutux_done_list);
+  sem_post(&mutex_done_list);
 }
 
 void *thread_pool_manager(void *void_arg) {
@@ -88,9 +88,9 @@ void job_dispatcher(std::vector<struct Job> &job_list,
       continue;
 
     // send job into pending list
-    sem_wait(&mutux_pending_job);
+    sem_wait(&mutex_pending_job);
     pending_job.push_back(job_list.at(i));
-    sem_post(&mutux_pending_job);
+    sem_post(&mutex_pending_job);
     sem_post(&is_job_ready);
 
     job_list.at(i).is_taken = true;
@@ -104,7 +104,7 @@ void job_dispatcher(std::vector<struct Job> &job_list,
         continue;
 
       // check whether need wait other jobs done
-      sem_wait(&mutux_done_list);
+      sem_wait(&mutex_done_list);
       bool is_unsolved_dep = false;
       for (auto dep : job_list.at(i).dependency) {
         if (!done_list.at(dep)) {
@@ -112,14 +112,14 @@ void job_dispatcher(std::vector<struct Job> &job_list,
           break;
         }
       }
-      sem_post(&mutux_done_list);
+      sem_post(&mutex_done_list);
       if (is_unsolved_dep)
         continue;
 
       // send job into pending list
-      sem_wait(&mutux_pending_job);
+      sem_wait(&mutex_pending_job);
       pending_job.push_back(job_list.at(i));
-      sem_post(&mutux_pending_job);
+      sem_post(&mutex_pending_job);
       sem_post(&is_job_ready);
 
       job_list.at(i).is_taken = true;
@@ -204,8 +204,8 @@ int main(int argc, char **argv) {
 
   sem_init(&is_job_ready, 0, 0);
   sem_init(&is_job_done, 0, 0);
-  sem_init(&mutux_pending_job, 0, 1);
-  sem_init(&mutux_done_list, 0, 1);
+  sem_init(&mutex_pending_job, 0, 1);
+  sem_init(&mutex_done_list, 0, 1);
 
   // create a new thread pool
   for (int i = 0; i < thread_nums; i++) {
