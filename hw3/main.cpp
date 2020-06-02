@@ -96,9 +96,8 @@ void job_dispatcher(std::vector<struct Job> &job_list,
     job_list.at(i).is_taken = true;
   }
 
-  // get job done semaphore and send one possible job
-  for (int remain_jobs = job_list.size(); remain_jobs > 0; remain_jobs--) {
-    sem_wait(&is_job_done);
+  // send possible jobs
+  for (; pending_job.size() < job_list.size();) {
     sem_wait(&mutux_done_list);
     for (int i = 0; i < job_list.size(); i++) {
       // check whether job already pending
@@ -125,6 +124,11 @@ void job_dispatcher(std::vector<struct Job> &job_list,
       job_list.at(i).is_taken = true;
     }
     sem_post(&mutux_done_list);
+  }
+
+  // wait all jobs done
+  for (int remain_jobs = job_list.size(); remain_jobs > 0; remain_jobs--) {
+    sem_wait(&is_job_done);
   }
 }
 
@@ -192,20 +196,6 @@ int main(int argc, char **argv) {
     job_list.push_back(job);
     job_idx++;
   }
-
-  // check job list
-  // std::cout << "check job list!!" << std::endl;
-  // for (int i = 0; i < job_list.size(); i++) {
-  //   std::cout << job_list.at(i).left << " -> ";
-  //   for (int j = 0; j < job_list.at(i).right.size(); j++) {
-  //     std::cout << job_list.at(i).right.at(j) << " ";
-  //   }
-  //   std::cout << "; dep: ";
-  //   for (auto dep : job_list.at(i).dependency) {
-  //     std::cout << dep << " ";
-  //   }
-  //   std::cout << std::endl;
-  // }
 
   std::vector<pthread_t> tid(thread_nums);
   std::vector<struct Arg> args(thread_nums);
