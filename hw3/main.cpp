@@ -24,7 +24,7 @@ struct Arg {
   std::vector<bool> *done_list;
 };
 
-void job_worker(std::vector<int> *nums, struct Job &job) {
+void thread_worker(std::vector<int> *nums, struct Job &job) {
   int result = 0;
   bool is_positive = true;
   for (int i = 0; i < job.right.size(); i++) {
@@ -48,8 +48,9 @@ void job_worker(std::vector<int> *nums, struct Job &job) {
   nums->at(job.left) = result;
 }
 
-void job_manager(std::vector<int> *nums, std::vector<struct Job> *pending_job,
-                 std::vector<bool> *done_list) {
+void thread_manager(std::vector<int> *nums,
+                    std::vector<struct Job> *pending_job,
+                    std::vector<bool> *done_list) {
   // find non-taken job, and mark that job as taken
   sem_wait(&mutex_pending_job);
   int idx = 0;
@@ -61,7 +62,7 @@ void job_manager(std::vector<int> *nums, std::vector<struct Job> *pending_job,
   sem_post(&mutex_pending_job);
 
   // do the job
-  job_worker(nums, pending_job->at(idx));
+  thread_worker(nums, pending_job->at(idx));
 
   // mark complete job as done
   sem_wait(&mutex_done_list);
@@ -73,7 +74,7 @@ void *thread_pool_manager(void *void_arg) {
   Arg *arg = (Arg *)void_arg;
   for (;;) {
     sem_wait(&is_job_ready);
-    job_manager(arg->nums, arg->pending_job, arg->done_list);
+    thread_manager(arg->nums, arg->pending_job, arg->done_list);
     sem_post(&is_job_done);
   }
 }
@@ -197,15 +198,15 @@ int main(int argc, char **argv) {
     job_idx++;
   }
 
-  std::vector<pthread_t> tid(thread_nums);
-  std::vector<struct Arg> args(thread_nums);
-  std::vector<struct Job> pending_job;
-  std::vector<bool> done_list(job_list.size(), false);
-
   sem_init(&is_job_ready, 0, 0);
   sem_init(&is_job_done, 0, 0);
   sem_init(&mutex_pending_job, 0, 1);
   sem_init(&mutex_done_list, 0, 1);
+
+  std::vector<pthread_t> tid(thread_nums);
+  std::vector<struct Arg> args(thread_nums);
+  std::vector<struct Job> pending_job;
+  std::vector<bool> done_list(job_list.size(), false);
 
   // create a new thread pool
   for (int i = 0; i < thread_nums; i++) {
