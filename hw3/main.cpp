@@ -98,13 +98,13 @@ void job_dispatcher(std::vector<struct Job> &job_list,
 
   // send possible jobs
   for (; pending_job.size() < job_list.size();) {
-    sem_wait(&mutux_done_list);
     for (int i = 0; i < job_list.size(); i++) {
       // check whether job already pending
       if (job_list.at(i).is_taken)
         continue;
 
       // check whether need wait other jobs done
+      sem_wait(&mutux_done_list);
       bool is_unsolved_dep = false;
       for (auto dep : job_list.at(i).dependency) {
         if (!done_list.at(dep)) {
@@ -112,6 +112,7 @@ void job_dispatcher(std::vector<struct Job> &job_list,
           break;
         }
       }
+      sem_post(&mutux_done_list);
       if (is_unsolved_dep)
         continue;
 
@@ -123,7 +124,6 @@ void job_dispatcher(std::vector<struct Job> &job_list,
 
       job_list.at(i).is_taken = true;
     }
-    sem_post(&mutux_done_list);
   }
 
   // wait all jobs done
