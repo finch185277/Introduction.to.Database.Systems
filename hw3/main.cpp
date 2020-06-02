@@ -8,7 +8,7 @@
 #include <vector>
 
 sem_t is_job_ready, is_job_done;
-sem_t mutux_pending_job, mutux_done_list, mutux_var_list;
+sem_t mutux_pending_job, mutux_done_list;
 
 struct Job {
   int id;
@@ -45,9 +45,7 @@ void job_worker(std::vector<int> *nums, struct Job &job) {
         result -= stoi(job.right.at(i));
     }
   }
-  sem_wait(&mutux_var_list);
   nums->at(job.left) = result;
-  sem_post(&mutux_var_list);
 }
 
 void job_manager(std::vector<int> *nums, std::vector<struct Job> *pending_job,
@@ -58,8 +56,6 @@ void job_manager(std::vector<int> *nums, std::vector<struct Job> *pending_job,
   for (; idx < pending_job->size(); idx++)
     if (pending_job->at(idx).is_taken == false)
       break;
-  // if (idx == pending_job->size())
-  //   std::cout << "pending job index fail!!" << std::endl;
   int job_id = pending_job->at(idx).id;
   pending_job->at(idx).is_taken = true;
   sem_post(&mutux_pending_job);
@@ -220,7 +216,6 @@ int main(int argc, char **argv) {
   sem_init(&is_job_done, 0, 0);
   sem_init(&mutux_pending_job, 0, 1);
   sem_init(&mutux_done_list, 0, 1);
-  sem_init(&mutux_var_list, 0, 1);
 
   // create a new thread pool
   for (int i = 0; i < thread_nums; i++) {
