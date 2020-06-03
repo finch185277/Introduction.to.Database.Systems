@@ -3,20 +3,23 @@ ARG = -O3 -std=c++17 -pthread -g -o
 RAW_FILES = main.cpp
 EXEC_FILE = main
 
-TN = 16
-DATA_FOLDER = data
-IN_FILE = $(DATA_FOLDER)/data1
-OUT_FILE = $(DATA_FOLDER)/data1_out
-ANS_FILE = $(DATA_FOLDER)/data1_answer
+TEST_SCRIPT = test.sh
 
 all: $(RAW_FILES)
 	$(CXX) $(ARG) $(EXEC_FILE) $^
 
-.PHONY: test clean
+.PHONY: test test_time clean
 
 test: all
-	./$(EXEC_FILE) $(TN) $(OUT_FILE) < $(IN_FILE)
-	diff $(OUT_FILE) $(ANS_FILE)
+	./$(TEST_SCRIPT)
+
+time:
+	$(CXX) $(ARG) $(EXEC_FILE) time.cpp
+	./$(TEST_SCRIPT)
+
+sample:
+	$(CXX) $(ARG) $(EXEC_FILE) sample.cpp
+	./$(TEST_SCRIPT)
 
 clean:
 	rm -rf $(EXEC_FILE)
