@@ -3,8 +3,8 @@
 #include <limits>
 #include <pthread.h>
 #include <semaphore.h>
-#include <set>
 #include <sstream>
+#include <unordered_set>
 #include <vector>
 
 sem_t is_job_ready, is_job_done;
@@ -13,7 +13,7 @@ sem_t mutex_pending_job, mutex_done_list;
 struct Job {
   int id;
   bool is_taken;
-  std::set<int> dependency;
+  std::unordered_set<int> dependency;
   int left;
   std::vector<std::string> right;
 };
@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
 
   // build job list
   std::vector<Job> job_list;
-  std::vector<std::vector<int>> dep_list(var_num);
+  std::vector<std::unordered_set<int>> dep_list(var_num);
   int job_idx = 0;
   std::string line;
   std::getline(std::cin, line); // read line break
@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
     job.is_taken = false;
     bool is_left = true;
     bool is_right = false;
-    std::vector<int> right_var_vec;
+    std::unordered_set<int> job_var_vec;
     std::stringstream ss(line);
     std::string token;
     while (std::getline(ss, token, ' ')) {
@@ -174,6 +174,7 @@ int main(int argc, char **argv) {
       if (is_left) {
         int left_var = stoi(token.substr(1, token.size() - 1));
         job.left = left_var;
+        job_var_vec.insert(left_var);
         if (dep_list.at(left_var).size() > 0)
           for (auto job_id : dep_list.at(left_var))
             job.dependency.insert(job_id);
@@ -181,7 +182,7 @@ int main(int argc, char **argv) {
       } else {
         if (token[0] == '$') {
           int right_var = stoi(token.substr(1, token.size() - 1));
-          right_var_vec.push_back(right_var);
+          job_var_vec.insert(right_var);
           if (dep_list.at(right_var).size() > 0)
             for (auto job_id : dep_list.at(right_var))
               job.dependency.insert(job_id);
@@ -189,9 +190,8 @@ int main(int argc, char **argv) {
       }
     }
     // push job id into dep list
-    for (int right_var : right_var_vec)
-      dep_list.at(right_var).push_back(job_idx);
-    dep_list.at(job.left).push_back(job_idx);
+    for (int var : job_var_vec)
+      dep_list.at(var).insert(job_idx);
 
     // push job into job list
     job_list.push_back(job);
