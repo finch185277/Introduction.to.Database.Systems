@@ -8,7 +8,7 @@ TEST_SCRIPT = test.sh
 all: $(RAW_FILES)
 	$(CXX) $(ARG) $(EXEC_FILE) $^
 
-.PHONY: test test_time clean
+.PHONY: test time sample clean
 
 test: all
 	./$(TEST_SCRIPT)
