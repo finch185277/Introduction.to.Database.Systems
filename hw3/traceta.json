@@ -1,0 +1,1625 @@
+{
+  "steps": [
+    {
+      "join_preparation": {
+        "select#": 1,
+        "steps": [
+          {
+            "join_preparation": {
+              "select#": 2,
+              "steps": [
+                {
+                  "join_preparation": {
+                    "select#": 3,
+                    "steps": [
+                      {
+                        "join_preparation": {
+                          "select#": 4,
+                          "steps": [
+                            {
+                              "expanded_query": "/* select#4 */ select `match_info`.`match_id` AS `match_id` from `match_info` where ((`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "join_preparation": {
+                          "select#": 5,
+                          "steps": [
+                            {
+                              "expanded_query": "/* select#5 */ select `participant`.`match_id` AS `match_id`,`participant`.`champion_id` AS `champion_id`,`participant`.`position` AS `position` from `participant` where ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "derived": {
+                          "table": "``.`` `dur_match`",
+                          "select#": 4,
+                          "merged": true
+                        }
+                      },
+                      {
+                        "derived": {
+                          "table": "``.`` `par`",
+                          "select#": 5,
+                          "merged": true
+                        }
+                      },
+                      {
+                        "expanded_query": "/* select#3 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from (`match_info`) join (`participant`) on(((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))) where (`participant`.`match_id` = `match_info`.`match_id`) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "join_preparation": {
+                    "select#": 6,
+                    "steps": [
+                      {
+                        "join_preparation": {
+                          "select#": 7,
+                          "steps": [
+                            {
+                              "join_preparation": {
+                                "select#": 8,
+                                "steps": [
+                                  {
+                                    "expanded_query": "/* select#8 */ select `match_info`.`match_id` AS `match_id` from `match_info` where ((`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "join_preparation": {
+                                "select#": 9,
+                                "steps": [
+                                  {
+                                    "expanded_query": "/* select#9 */ select `participant`.`match_id` AS `match_id`,`participant`.`champion_id` AS `champion_id`,`participant`.`position` AS `position` from `participant` where ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "derived": {
+                                "table": "``.`` `dur_match`",
+                                "select#": 8,
+                                "merged": true
+                              }
+                            },
+                            {
+                              "derived": {
+                                "table": "``.`` `par`",
+                                "select#": 9,
+                                "merged": true
+                              }
+                            },
+                            {
+                              "expanded_query": "/* select#7 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from (`match_info`) join (`participant`) on(((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))) where (`participant`.`match_id` = `match_info`.`match_id`) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "derived": {
+                          "table": " `grp_pos_champ`",
+                          "select#": 7,
+                          "materialized": true
+                        }
+                      },
+                      {
+                        "expanded_query": "/* select#6 */ select `grp_pos_champ`.`position` AS `position`,max(`grp_pos_champ`.`cnt`) AS `cnt` from (/* select#7 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from (`match_info`) join (`participant`) on(((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))) where (`participant`.`match_id` = `match_info`.`match_id`) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc) `grp_pos_champ` group by `grp_pos_champ`.`position`"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "derived": {
+                    "table": " `list`",
+                    "select#": 3,
+                    "materialized": true
+                  }
+                },
+                {
+                  "derived": {
+                    "table": " `tmp`",
+                    "select#": 6,
+                    "materialized": true
+                  }
+                },
+                {
+                  "expanded_query": "/* select#2 */ select `list`.`position` AS `position`,`list`.`champion_id` AS `champion_id` from (/* select#3 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from (`match_info`) join (`participant`) on(((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))) where (`participant`.`match_id` = `match_info`.`match_id`) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc) `list` join (/* select#6 */ select `grp_pos_champ`.`position` AS `position`,max(`grp_pos_champ`.`cnt`) AS `cnt` from (/* select#7 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from (`match_info`) join (`participant`) on(((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))) where (`participant`.`match_id` = `match_info`.`match_id`) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc) `grp_pos_champ` group by `grp_pos_champ`.`position`) `tmp` where ((`list`.`position` = `tmp`.`position`) and (`list`.`cnt` = `tmp`.`cnt`))"
+                }
+              ]
+            }
+          },
+          {
+            "derived": {
+              "table": "``.`` `final`",
+              "select#": 2,
+              "merged": true
+            }
+          },
+          {
+            "expanded_query": "/* select#1 */ select `list`.`position` AS `position`,`champ`.`champion_name` AS `champion_name` from ((/* select#3 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from (`match_info`) join (`participant`) on(((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))) where (`participant`.`match_id` = `match_info`.`match_id`) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc) `list` join (/* select#6 */ select `grp_pos_champ`.`position` AS `position`,max(`grp_pos_champ`.`cnt`) AS `cnt` from (/* select#7 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from (`match_info`) join (`participant`) on(((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))) where (`participant`.`match_id` = `match_info`.`match_id`) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc) `grp_pos_champ` group by `grp_pos_champ`.`position`) `tmp`) join `champ` where (`list`.`champion_id` = `champ`.`champion_id`) order by `list`.`position`"
+          },
+          {
+            "transformations_to_nested_joins": {
+              "transformations": [
+                "JOIN_condition_to_WHERE",
+                "parenthesis_removal"
+              ],
+              "expanded_query": "/* select#7 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from `match_info` join `participant` where ((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000)) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc"
+            }
+          },
+          {
+            "transformations_to_nested_joins": {
+              "transformations": [
+                "JOIN_condition_to_WHERE",
+                "parenthesis_removal"
+              ],
+              "expanded_query": "/* select#3 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from `match_info` join `participant` where ((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000)) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc"
+            }
+          },
+          {
+            "transformations_to_nested_joins": {
+              "transformations": [
+                "JOIN_condition_to_WHERE",
+                "parenthesis_removal"
+              ],
+              "expanded_query": "/* select#1 */ select `list`.`position` AS `position`,`champ`.`champion_name` AS `champion_name` from (/* select#3 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from `match_info` join `participant` where ((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000)) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc) `list` join (/* select#6 */ select `grp_pos_champ`.`position` AS `position`,max(`grp_pos_champ`.`cnt`) AS `cnt` from (/* select#7 */ select `participant`.`position` AS `position`,`participant`.`champion_id` AS `champion_id`,count(`participant`.`champion_id`) AS `cnt` from `match_info` join `participant` where ((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000)) group by `participant`.`position`,`participant`.`champion_id` order by `cnt` desc) `grp_pos_champ` group by `grp_pos_champ`.`position`) `tmp` join `champ` where ((`list`.`champion_id` = `champ`.`champion_id`) and (`list`.`position` = `tmp`.`position`) and (`list`.`cnt` = `tmp`.`cnt`)) order by `list`.`position`"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "join_optimization": {
+        "select#": 1,
+        "steps": [
+          {
+            "join_optimization": {
+              "select#": 3,
+              "steps": [
+                {
+                  "condition_processing": {
+                    "condition": "WHERE",
+                    "original_condition": "((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))",
+                    "steps": [
+                      {
+                        "transformation": "equality_propagation",
+                        "resulting_condition": "((multiple equal('TOP', `participant`.`position`) or multiple equal('MID', `participant`.`position`) or multiple equal('JUNGLE', `participant`.`position`) or multiple equal('DUO_CARRY', `participant`.`position`) or multiple equal('DUO_SUPPORT', `participant`.`position`)) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000) and multiple equal(`participant`.`match_id`, `match_info`.`match_id`))"
+                      },
+                      {
+                        "transformation": "constant_propagation",
+                        "resulting_condition": "((multiple equal('TOP', `participant`.`position`) or multiple equal('MID', `participant`.`position`) or multiple equal('JUNGLE', `participant`.`position`) or multiple equal('DUO_CARRY', `participant`.`position`) or multiple equal('DUO_SUPPORT', `participant`.`position`)) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000) and multiple equal(`participant`.`match_id`, `match_info`.`match_id`))"
+                      },
+                      {
+                        "transformation": "trivial_condition_removal",
+                        "resulting_condition": "((multiple equal('TOP', `participant`.`position`) or multiple equal('MID', `participant`.`position`) or multiple equal('JUNGLE', `participant`.`position`) or multiple equal('DUO_CARRY', `participant`.`position`) or multiple equal('DUO_SUPPORT', `participant`.`position`)) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000) and multiple equal(`participant`.`match_id`, `match_info`.`match_id`))"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "substitute_generated_columns": {
+                  }
+                },
+                {
+                  "table_dependencies": [
+                    {
+                      "table": "`match_info`",
+                      "row_may_be_null": false,
+                      "map_bit": 0,
+                      "depends_on_map_bits": [
+                      ]
+                    },
+                    {
+                      "table": "`participant`",
+                      "row_may_be_null": false,
+                      "map_bit": 1,
+                      "depends_on_map_bits": [
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "ref_optimizer_key_uses": [
+                    {
+                      "table": "`match_info`",
+                      "field": "match_id",
+                      "equals": "`participant`.`match_id`",
+                      "null_rejecting": false
+                    },
+                    {
+                      "table": "`participant`",
+                      "field": "match_id",
+                      "equals": "`match_info`.`match_id`",
+                      "null_rejecting": false
+                    }
+                  ]
+                },
+                {
+                  "rows_estimation": [
+                    {
+                      "table": "`match_info`",
+                      "table_scan": {
+                        "rows": 182454,
+                        "cost": 545
+                      }
+                    },
+                    {
+                      "table": "`participant`",
+                      "table_scan": {
+                        "rows": 1706044,
+                        "cost": 5991
+                      }
+                    }
+                  ]
+                },
+                {
+                  "considered_execution_plans": [
+                    {
+                      "plan_prefix": [
+                      ],
+                      "table": "`match_info`",
+                      "best_access_path": {
+                        "considered_access_paths": [
+                          {
+                            "access_type": "ref",
+                            "index": "PRIMARY",
+                            "usable": false,
+                            "chosen": false
+                          },
+                          {
+                            "rows_to_scan": 182454,
+                            "access_type": "scan",
+                            "resulting_rows": 20269,
+                            "cost": 37036,
+                            "chosen": true
+                          }
+                        ]
+                      },
+                      "condition_filtering_pct": 100,
+                      "rows_for_plan": 20269,
+                      "cost_for_plan": 37036,
+                      "rest_of_plan": [
+                        {
+                          "plan_prefix": [
+                            "`match_info`"
+                          ],
+                          "table": "`participant`",
+                          "best_access_path": {
+                            "considered_access_paths": [
+                              {
+                                "access_type": "ref",
+                                "index": "match_id",
+                                "rows": 9.9813,
+                                "cost": 242769,
+                                "chosen": true
+                              },
+                              {
+                                "rows_to_scan": 1706044,
+                                "access_type": "scan",
+                                "using_join_cache": true,
+                                "buffers_needed": 1,
+                                "resulting_rows": 698642,
+                                "cost": 2.83e9,
+                                "chosen": false
+                              }
+                            ]
+                          },
+                          "condition_filtering_pct": 40.951,
+                          "rows_for_plan": 82847,
+                          "cost_for_plan": 279804,
+                          "chosen": true
+                        }
+                      ]
+                    },
+                    {
+                      "plan_prefix": [
+                      ],
+                      "table": "`participant`",
+                      "best_access_path": {
+                        "considered_access_paths": [
+                          {
+                            "access_type": "ref",
+                            "index": "match_id",
+                            "usable": false,
+                            "chosen": false
+                          },
+                          {
+                            "rows_to_scan": 1706044,
+                            "access_type": "scan",
+                            "resulting_rows": 698642,
+                            "cost": 347200,
+                            "chosen": true
+                          }
+                        ]
+                      },
+                      "condition_filtering_pct": 100,
+                      "rows_for_plan": 698642,
+                      "cost_for_plan": 347200,
+                      "pruned_by_cost": true
+                    }
+                  ]
+                },
+                {
+                  "attaching_conditions_to_tables": {
+                    "original_condition": "((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))",
+                    "attached_conditions_computation": [
+                    ],
+                    "attached_conditions_summary": [
+                      {
+                        "table": "`match_info`",
+                        "attached": "((`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))"
+                      },
+                      {
+                        "table": "`participant`",
+                        "attached": "((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "clause_processing": {
+                    "clause": "ORDER BY",
+                    "original_clause": "`cnt` desc",
+                    "items": [
+                      {
+                        "item": "count(`participant`.`champion_id`)"
+                      }
+                    ],
+                    "resulting_clause_is_simple": false,
+                    "resulting_clause": "`cnt` desc"
+                  }
+                },
+                {
+                  "clause_processing": {
+                    "clause": "GROUP BY",
+                    "original_clause": "`participant`.`position`,`participant`.`champion_id`",
+                    "items": [
+                      {
+                        "item": "`participant`.`position`"
+                      },
+                      {
+                        "item": "`participant`.`champion_id`"
+                      }
+                    ],
+                    "resulting_clause_is_simple": false,
+                    "resulting_clause": "`participant`.`position`,`participant`.`champion_id`"
+                  }
+                },
+                {
+                  "refine_plan": [
+                    {
+                      "table": "`match_info`"
+                    },
+                    {
+                      "table": "`participant`"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "join_optimization": {
+              "select#": 6,
+              "steps": [
+                {
+                  "join_optimization": {
+                    "select#": 7,
+                    "steps": [
+                      {
+                        "condition_processing": {
+                          "condition": "WHERE",
+                          "original_condition": "((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))",
+                          "steps": [
+                            {
+                              "transformation": "equality_propagation",
+                              "resulting_condition": "((multiple equal('TOP', `participant`.`position`) or multiple equal('MID', `participant`.`position`) or multiple equal('JUNGLE', `participant`.`position`) or multiple equal('DUO_CARRY', `participant`.`position`) or multiple equal('DUO_SUPPORT', `participant`.`position`)) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000) and multiple equal(`participant`.`match_id`, `match_info`.`match_id`))"
+                            },
+                            {
+                              "transformation": "constant_propagation",
+                              "resulting_condition": "((multiple equal('TOP', `participant`.`position`) or multiple equal('MID', `participant`.`position`) or multiple equal('JUNGLE', `participant`.`position`) or multiple equal('DUO_CARRY', `participant`.`position`) or multiple equal('DUO_SUPPORT', `participant`.`position`)) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000) and multiple equal(`participant`.`match_id`, `match_info`.`match_id`))"
+                            },
+                            {
+                              "transformation": "trivial_condition_removal",
+                              "resulting_condition": "((multiple equal('TOP', `participant`.`position`) or multiple equal('MID', `participant`.`position`) or multiple equal('JUNGLE', `participant`.`position`) or multiple equal('DUO_CARRY', `participant`.`position`) or multiple equal('DUO_SUPPORT', `participant`.`position`)) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000) and multiple equal(`participant`.`match_id`, `match_info`.`match_id`))"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "substitute_generated_columns": {
+                        }
+                      },
+                      {
+                        "table_dependencies": [
+                          {
+                            "table": "`match_info`",
+                            "row_may_be_null": false,
+                            "map_bit": 0,
+                            "depends_on_map_bits": [
+                            ]
+                          },
+                          {
+                            "table": "`participant`",
+                            "row_may_be_null": false,
+                            "map_bit": 1,
+                            "depends_on_map_bits": [
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "ref_optimizer_key_uses": [
+                          {
+                            "table": "`match_info`",
+                            "field": "match_id",
+                            "equals": "`participant`.`match_id`",
+                            "null_rejecting": false
+                          },
+                          {
+                            "table": "`participant`",
+                            "field": "match_id",
+                            "equals": "`match_info`.`match_id`",
+                            "null_rejecting": false
+                          }
+                        ]
+                      },
+                      {
+                        "rows_estimation": [
+                          {
+                            "table": "`match_info`",
+                            "table_scan": {
+                              "rows": 182454,
+                              "cost": 545
+                            }
+                          },
+                          {
+                            "table": "`participant`",
+                            "table_scan": {
+                              "rows": 1706044,
+                              "cost": 5991
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "considered_execution_plans": [
+                          {
+                            "plan_prefix": [
+                            ],
+                            "table": "`match_info`",
+                            "best_access_path": {
+                              "considered_access_paths": [
+                                {
+                                  "access_type": "ref",
+                                  "index": "PRIMARY",
+                                  "usable": false,
+                                  "chosen": false
+                                },
+                                {
+                                  "rows_to_scan": 182454,
+                                  "access_type": "scan",
+                                  "resulting_rows": 20269,
+                                  "cost": 37036,
+                                  "chosen": true
+                                }
+                              ]
+                            },
+                            "condition_filtering_pct": 100,
+                            "rows_for_plan": 20269,
+                            "cost_for_plan": 37036,
+                            "rest_of_plan": [
+                              {
+                                "plan_prefix": [
+                                  "`match_info`"
+                                ],
+                                "table": "`participant`",
+                                "best_access_path": {
+                                  "considered_access_paths": [
+                                    {
+                                      "access_type": "ref",
+                                      "index": "match_id",
+                                      "rows": 9.9813,
+                                      "cost": 242769,
+                                      "chosen": true
+                                    },
+                                    {
+                                      "rows_to_scan": 1706044,
+                                      "access_type": "scan",
+                                      "using_join_cache": true,
+                                      "buffers_needed": 1,
+                                      "resulting_rows": 698642,
+                                      "cost": 2.83e9,
+                                      "chosen": false
+                                    }
+                                  ]
+                                },
+                                "condition_filtering_pct": 40.951,
+                                "rows_for_plan": 82847,
+                                "cost_for_plan": 279804,
+                                "chosen": true
+                              }
+                            ]
+                          },
+                          {
+                            "plan_prefix": [
+                            ],
+                            "table": "`participant`",
+                            "best_access_path": {
+                              "considered_access_paths": [
+                                {
+                                  "access_type": "ref",
+                                  "index": "match_id",
+                                  "usable": false,
+                                  "chosen": false
+                                },
+                                {
+                                  "rows_to_scan": 1706044,
+                                  "access_type": "scan",
+                                  "resulting_rows": 698642,
+                                  "cost": 347200,
+                                  "chosen": true
+                                }
+                              ]
+                            },
+                            "condition_filtering_pct": 100,
+                            "rows_for_plan": 698642,
+                            "cost_for_plan": 347200,
+                            "pruned_by_cost": true
+                          }
+                        ]
+                      },
+                      {
+                        "attaching_conditions_to_tables": {
+                          "original_condition": "((`participant`.`match_id` = `match_info`.`match_id`) and ((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT')) and (`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))",
+                          "attached_conditions_computation": [
+                          ],
+                          "attached_conditions_summary": [
+                            {
+                              "table": "`match_info`",
+                              "attached": "((`match_info`.`duration` >= 2400) and (`match_info`.`duration` <= 3000))"
+                            },
+                            {
+                              "table": "`participant`",
+                              "attached": "((`participant`.`position` = 'TOP') or (`participant`.`position` = 'MID') or (`participant`.`position` = 'JUNGLE') or (`participant`.`position` = 'DUO_CARRY') or (`participant`.`position` = 'DUO_SUPPORT'))"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "clause_processing": {
+                          "clause": "ORDER BY",
+                          "original_clause": "`cnt` desc",
+                          "items": [
+                            {
+                              "item": "count(`participant`.`champion_id`)"
+                            }
+                          ],
+                          "resulting_clause_is_simple": false,
+                          "resulting_clause": "`cnt` desc"
+                        }
+                      },
+                      {
+                        "clause_processing": {
+                          "clause": "GROUP BY",
+                          "original_clause": "`participant`.`position`,`participant`.`champion_id`",
+                          "items": [
+                            {
+                              "item": "`participant`.`position`"
+                            },
+                            {
+                              "item": "`participant`.`champion_id`"
+                            }
+                          ],
+                          "resulting_clause_is_simple": false,
+                          "resulting_clause": "`participant`.`position`,`participant`.`champion_id`"
+                        }
+                      },
+                      {
+                        "refine_plan": [
+                          {
+                            "table": "`match_info`"
+                          },
+                          {
+                            "table": "`participant`"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "substitute_generated_columns": {
+                  }
+                },
+                {
+                  "table_dependencies": [
+                    {
+                      "table": " `grp_pos_champ`",
+                      "row_may_be_null": false,
+                      "map_bit": 0,
+                      "depends_on_map_bits": [
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "rows_estimation": [
+                    {
+                      "table": " `grp_pos_champ`",
+                      "table_scan": {
+                        "rows": 82846,
+                        "cost": 4152
+                      }
+                    }
+                  ]
+                },
+                {
+                  "considered_execution_plans": [
+                    {
+                      "plan_prefix": [
+                      ],
+                      "table": " `grp_pos_champ`",
+                      "best_access_path": {
+                        "considered_access_paths": [
+                          {
+                            "rows_to_scan": 82846,
+                            "access_type": "scan",
+                            "resulting_rows": 82846,
+                            "cost": 20722,
+                            "chosen": true,
+                            "use_tmp_table": true
+                          }
+                        ]
+                      },
+                      "condition_filtering_pct": 100,
+                      "rows_for_plan": 82846,
+                      "cost_for_plan": 20722,
+                      "sort_cost": 82846,
+                      "new_cost_for_plan": 103568,
+                      "chosen": true
+                    }
+                  ]
+                },
+                {
+                  "attaching_conditions_to_tables": {
+                    "original_condition": null,
+                    "attached_conditions_computation": [
+                    ],
+                    "attached_conditions_summary": [
+                      {
+                        "table": " `grp_pos_champ`",
+                        "attached": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "clause_processing": {
+                    "clause": "GROUP BY",
+                    "original_clause": "`grp_pos_champ`.`position`",
+                    "items": [
+                      {
+                        "item": "`grp_pos_champ`.`position`"
+                      }
+                    ],
+                    "resulting_clause_is_simple": true,
+                    "resulting_clause": "`grp_pos_champ`.`position`"
+                  }
+                },
+                {
+                  "refine_plan": [
+                    {
+                      "table": " `grp_pos_champ`"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "condition_processing": {
+              "condition": "WHERE",
+              "original_condition": "((`list`.`champion_id` = `champ`.`champion_id`) and (`list`.`position` = `tmp`.`position`) and (`list`.`cnt` = `tmp`.`cnt`))",
+              "steps": [
+                {
+                  "transformation": "equality_propagation",
+                  "resulting_condition": "(multiple equal(`list`.`champion_id`, `champ`.`champion_id`) and multiple equal(`list`.`position`, `tmp`.`position`) and multiple equal(`list`.`cnt`, `tmp`.`cnt`))"
+                },
+                {
+                  "transformation": "constant_propagation",
+                  "resulting_condition": "(multiple equal(`list`.`champion_id`, `champ`.`champion_id`) and multiple equal(`list`.`position`, `tmp`.`position`) and multiple equal(`list`.`cnt`, `tmp`.`cnt`))"
+                },
+                {
+                  "transformation": "trivial_condition_removal",
+                  "resulting_condition": "(multiple equal(`list`.`champion_id`, `champ`.`champion_id`) and multiple equal(`list`.`position`, `tmp`.`position`) and multiple equal(`list`.`cnt`, `tmp`.`cnt`))"
+                }
+              ]
+            }
+          },
+          {
+            "substitute_generated_columns": {
+            }
+          },
+          {
+            "table_dependencies": [
+              {
+                "table": " `list`",
+                "row_may_be_null": false,
+                "map_bit": 0,
+                "depends_on_map_bits": [
+                ]
+              },
+              {
+                "table": " `tmp`",
+                "row_may_be_null": false,
+                "map_bit": 1,
+                "depends_on_map_bits": [
+                ]
+              },
+              {
+                "table": "`champ`",
+                "row_may_be_null": false,
+                "map_bit": 2,
+                "depends_on_map_bits": [
+                ]
+              }
+            ]
+          },
+          {
+            "ref_optimizer_key_uses": [
+              {
+                "table": " `list`",
+                "field": "position",
+                "equals": "`tmp`.`position`",
+                "null_rejecting": false
+              },
+              {
+                "table": " `list`",
+                "field": "champion_id",
+                "equals": "`champ`.`champion_id`",
+                "null_rejecting": false
+              },
+              {
+                "table": " `list`",
+                "field": "cnt",
+                "equals": "`tmp`.`cnt`",
+                "null_rejecting": true
+              },
+              {
+                "table": " `list`",
+                "field": "position",
+                "equals": "`tmp`.`position`",
+                "null_rejecting": false
+              },
+              {
+                "table": " `list`",
+                "field": "cnt",
+                "equals": "`tmp`.`cnt`",
+                "null_rejecting": true
+              },
+              {
+                "table": " `list`",
+                "field": "champion_id",
+                "equals": "`champ`.`champion_id`",
+                "null_rejecting": false
+              },
+              {
+                "table": " `tmp`",
+                "field": "position",
+                "equals": "`list`.`position`",
+                "null_rejecting": false
+              },
+              {
+                "table": " `tmp`",
+                "field": "cnt",
+                "equals": "`list`.`cnt`",
+                "null_rejecting": false
+              },
+              {
+                "table": " `tmp`",
+                "field": "position",
+                "equals": "`list`.`position`",
+                "null_rejecting": false
+              },
+              {
+                "table": " `tmp`",
+                "field": "cnt",
+                "equals": "`list`.`cnt`",
+                "null_rejecting": false
+              },
+              {
+                "table": "`champ`",
+                "field": "champion_id",
+                "equals": "`list`.`champion_id`",
+                "null_rejecting": false
+              }
+            ]
+          },
+          {
+            "rows_estimation": [
+              {
+                "table": " `list`",
+                "table_scan": {
+                  "rows": 82846,
+                  "cost": 4152
+                }
+              },
+              {
+                "table": " `tmp`",
+                "table_scan": {
+                  "rows": 82846,
+                  "cost": 4152
+                }
+              },
+              {
+                "table": "`champ`",
+                "table_scan": {
+                  "rows": 138,
+                  "cost": 1
+                }
+              }
+            ]
+          },
+          {
+            "considered_execution_plans": [
+              {
+                "plan_prefix": [
+                ],
+                "table": "`champ`",
+                "best_access_path": {
+                  "considered_access_paths": [
+                    {
+                      "access_type": "ref",
+                      "index": "PRIMARY",
+                      "usable": false,
+                      "chosen": false
+                    },
+                    {
+                      "rows_to_scan": 138,
+                      "access_type": "scan",
+                      "resulting_rows": 138,
+                      "cost": 28.6,
+                      "chosen": true
+                    }
+                  ]
+                },
+                "condition_filtering_pct": 100,
+                "rows_for_plan": 138,
+                "cost_for_plan": 28.6,
+                "rest_of_plan": [
+                  {
+                    "plan_prefix": [
+                      "`champ`"
+                    ],
+                    "table": " `list`",
+                    "best_access_path": {
+                      "considered_access_paths": [
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key0>",
+                          "usable": false,
+                          "chosen": false
+                        },
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key1>",
+                          "usable": false,
+                          "chosen": false
+                        },
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key2>",
+                          "rows": 1111.7,
+                          "cost": 184102,
+                          "chosen": true
+                        },
+                        {
+                          "rows_to_scan": 82846,
+                          "access_type": "scan",
+                          "using_join_cache": true,
+                          "buffers_needed": 1,
+                          "resulting_rows": 82846,
+                          "cost": 2.29e6,
+                          "chosen": false
+                        }
+                      ]
+                    },
+                    "condition_filtering_pct": 100,
+                    "rows_for_plan": 153419,
+                    "cost_for_plan": 184131,
+                    "rest_of_plan": [
+                      {
+                        "plan_prefix": [
+                          "`champ`",
+                          " `list`"
+                        ],
+                        "table": " `tmp`",
+                        "best_access_path": {
+                          "considered_access_paths": [
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key0>",
+                              "rows": 10.001,
+                              "cost": 1.84e6,
+                              "chosen": true
+                            },
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key1>",
+                              "rows": 10.001,
+                              "cost": 1.84e6,
+                              "chosen": false
+                            },
+                            {
+                              "rows_to_scan": 82846,
+                              "access_type": "scan",
+                              "using_join_cache": true,
+                              "buffers_needed": 27,
+                              "resulting_rows": 82846,
+                              "cost": 2.54e9,
+                              "chosen": false
+                            }
+                          ]
+                        },
+                        "condition_filtering_pct": 100,
+                        "rows_for_plan": 1.53e6,
+                        "cost_for_plan": 2.03e6,
+                        "sort_cost": 1.53e6,
+                        "new_cost_for_plan": 3.56e6,
+                        "chosen": true
+                      }
+                    ]
+                  },
+                  {
+                    "plan_prefix": [
+                      "`champ`"
+                    ],
+                    "table": " `tmp`",
+                    "best_access_path": {
+                      "considered_access_paths": [
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key0>",
+                          "usable": false,
+                          "chosen": false
+                        },
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key1>",
+                          "usable": false,
+                          "chosen": false
+                        },
+                        {
+                          "rows_to_scan": 82846,
+                          "access_type": "scan",
+                          "using_join_cache": true,
+                          "buffers_needed": 1,
+                          "resulting_rows": 82846,
+                          "cost": 2.29e6,
+                          "chosen": true
+                        }
+                      ]
+                    },
+                    "condition_filtering_pct": 100,
+                    "rows_for_plan": 1.14e7,
+                    "cost_for_plan": 2.29e6,
+                    "rest_of_plan": [
+                      {
+                        "plan_prefix": [
+                          "`champ`",
+                          " `tmp`"
+                        ],
+                        "table": " `list`",
+                        "best_access_path": {
+                          "considered_access_paths": [
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key0>",
+                              "rows": 600.33,
+                              "cost": 8.24e9,
+                              "chosen": true
+                            },
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key1>",
+                              "rows": 689.27,
+                              "cost": 9.46e9,
+                              "chosen": false
+                            },
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key2>",
+                              "rows": 1111.7,
+                              "cost": 1.5e10,
+                              "chosen": false
+                            },
+                            {
+                              "rows_to_scan": 82846,
+                              "access_type": "scan",
+                              "using_join_cache": true,
+                              "buffers_needed": 1876,
+                              "resulting_rows": 82846,
+                              "cost": 1.9e11,
+                              "chosen": false
+                            }
+                          ]
+                        },
+                        "condition_filtering_pct": 100,
+                        "rows_for_plan": 6.86e9,
+                        "cost_for_plan": 8.24e9,
+                        "pruned_by_cost": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "plan_prefix": [
+                ],
+                "table": " `list`",
+                "best_access_path": {
+                  "considered_access_paths": [
+                    {
+                      "access_type": "ref",
+                      "index": "<auto_key0>",
+                      "usable": false,
+                      "chosen": false
+                    },
+                    {
+                      "access_type": "ref",
+                      "index": "<auto_key1>",
+                      "usable": false,
+                      "chosen": false
+                    },
+                    {
+                      "access_type": "ref",
+                      "index": "<auto_key2>",
+                      "usable": false,
+                      "chosen": false
+                    },
+                    {
+                      "rows_to_scan": 82846,
+                      "access_type": "scan",
+                      "resulting_rows": 82846,
+                      "cost": 20722,
+                      "chosen": true,
+                      "use_tmp_table": true
+                    }
+                  ]
+                },
+                "condition_filtering_pct": 100,
+                "rows_for_plan": 82846,
+                "cost_for_plan": 20722,
+                "rest_of_plan": [
+                  {
+                    "plan_prefix": [
+                      " `list`"
+                    ],
+                    "table": "`champ`",
+                    "best_access_path": {
+                      "considered_access_paths": [
+                        {
+                          "access_type": "eq_ref",
+                          "index": "PRIMARY",
+                          "rows": 1,
+                          "cost": 99415,
+                          "chosen": true,
+                          "cause": "clustered_pk_chosen_by_heuristics"
+                        },
+                        {
+                          "rows_to_scan": 138,
+                          "access_type": "scan",
+                          "using_join_cache": true,
+                          "buffers_needed": 9,
+                          "resulting_rows": 138,
+                          "cost": 2.29e6,
+                          "chosen": false
+                        }
+                      ]
+                    },
+                    "condition_filtering_pct": 100,
+                    "rows_for_plan": 82846,
+                    "cost_for_plan": 120137,
+                    "rest_of_plan": [
+                      {
+                        "plan_prefix": [
+                          " `list`",
+                          "`champ`"
+                        ],
+                        "table": " `tmp`",
+                        "best_access_path": {
+                          "considered_access_paths": [
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key0>",
+                              "rows": 10.001,
+                              "cost": 994224,
+                              "chosen": true
+                            },
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key1>",
+                              "rows": 10.001,
+                              "cost": 994224,
+                              "chosen": false
+                            },
+                            {
+                              "rows_to_scan": 82846,
+                              "access_type": "scan",
+                              "using_join_cache": true,
+                              "buffers_needed": 15,
+                              "resulting_rows": 82846,
+                              "cost": 1.37e9,
+                              "chosen": false
+                            }
+                          ]
+                        },
+                        "added_to_eq_ref_extension": false
+                      },
+                      {
+                        "plan_prefix": [
+                          " `list`",
+                          "`champ`"
+                        ],
+                        "table": " `tmp`",
+                        "best_access_path": {
+                          "considered_access_paths": [
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key0>",
+                              "rows": 10.001,
+                              "cost": 994224,
+                              "chosen": true
+                            },
+                            {
+                              "access_type": "ref",
+                              "index": "<auto_key1>",
+                              "rows": 10.001,
+                              "cost": 994224,
+                              "chosen": false
+                            },
+                            {
+                              "rows_to_scan": 82846,
+                              "access_type": "scan",
+                              "using_join_cache": true,
+                              "buffers_needed": 15,
+                              "resulting_rows": 82846,
+                              "cost": 1.37e9,
+                              "chosen": false
+                            }
+                          ]
+                        },
+                        "condition_filtering_pct": 100,
+                        "rows_for_plan": 828520,
+                        "cost_for_plan": 1.11e6,
+                        "sort_cost": 828520,
+                        "new_cost_for_plan": 1.94e6,
+                        "chosen": true
+                      }
+                    ]
+                  },
+                  {
+                    "plan_prefix": [
+                      " `list`"
+                    ],
+                    "table": " `tmp`",
+                    "best_access_path": {
+                      "considered_access_paths": [
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key0>",
+                          "rows": 10.001,
+                          "cost": 994224,
+                          "chosen": true
+                        },
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key1>",
+                          "rows": 10.001,
+                          "cost": 994224,
+                          "chosen": false
+                        },
+                        {
+                          "rows_to_scan": 82846,
+                          "access_type": "scan",
+                          "using_join_cache": true,
+                          "buffers_needed": 9,
+                          "resulting_rows": 82846,
+                          "cost": 1.37e9,
+                          "chosen": false
+                        }
+                      ]
+                    },
+                    "condition_filtering_pct": 100,
+                    "rows_for_plan": 828520,
+                    "cost_for_plan": 1.01e6,
+                    "pruned_by_heuristic": true
+                  }
+                ]
+              },
+              {
+                "plan_prefix": [
+                ],
+                "table": " `tmp`",
+                "best_access_path": {
+                  "considered_access_paths": [
+                    {
+                      "access_type": "ref",
+                      "index": "<auto_key0>",
+                      "usable": false,
+                      "chosen": false
+                    },
+                    {
+                      "access_type": "ref",
+                      "index": "<auto_key1>",
+                      "usable": false,
+                      "chosen": false
+                    },
+                    {
+                      "rows_to_scan": 82846,
+                      "access_type": "scan",
+                      "resulting_rows": 82846,
+                      "cost": 20722,
+                      "chosen": true
+                    }
+                  ]
+                },
+                "condition_filtering_pct": 100,
+                "rows_for_plan": 82846,
+                "cost_for_plan": 20722,
+                "rest_of_plan": [
+                  {
+                    "plan_prefix": [
+                      " `tmp`"
+                    ],
+                    "table": "`champ`",
+                    "best_access_path": {
+                      "considered_access_paths": [
+                        {
+                          "access_type": "ref",
+                          "index": "PRIMARY",
+                          "usable": false,
+                          "chosen": false
+                        },
+                        {
+                          "rows_to_scan": 138,
+                          "access_type": "scan",
+                          "using_join_cache": true,
+                          "buffers_needed": 8,
+                          "resulting_rows": 138,
+                          "cost": 2.29e6,
+                          "chosen": true
+                        }
+                      ]
+                    },
+                    "condition_filtering_pct": 100,
+                    "rows_for_plan": 1.14e7,
+                    "cost_for_plan": 2.31e6,
+                    "pruned_by_cost": true
+                  },
+                  {
+                    "plan_prefix": [
+                      " `tmp`"
+                    ],
+                    "table": " `list`",
+                    "best_access_path": {
+                      "considered_access_paths": [
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key0>",
+                          "rows": 828,
+                          "cost": 8.24e7,
+                          "chosen": true
+                        },
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key1>",
+                          "rows": 11.482,
+                          "cost": 1.14e6,
+                          "chosen": true
+                        },
+                        {
+                          "access_type": "ref",
+                          "index": "<auto_key2>",
+                          "usable": false,
+                          "chosen": false
+                        },
+                        {
+                          "rows_to_scan": 82846,
+                          "access_type": "scan",
+                          "using_join_cache": true,
+                          "buffers_needed": 8,
+                          "resulting_rows": 82846,
+                          "cost": 1.37e9,
+                          "chosen": false
+                        }
+                      ]
+                    },
+                    "condition_filtering_pct": 100,
+                    "rows_for_plan": 951264,
+                    "cost_for_plan": 1.16e6,
+                    "rest_of_plan": [
+                      {
+                        "plan_prefix": [
+                          " `tmp`",
+                          " `list`"
+                        ],
+                        "table": "`champ`",
+                        "best_access_path": {
+                          "considered_access_paths": [
+                            {
+                              "access_type": "eq_ref",
+                              "index": "PRIMARY",
+                              "rows": 1,
+                              "cost": 1.14e6,
+                              "chosen": true,
+                              "cause": "clustered_pk_chosen_by_heuristics"
+                            },
+                            {
+                              "rows_to_scan": 138,
+                              "access_type": "scan",
+                              "using_join_cache": true,
+                              "buffers_needed": 178,
+                              "resulting_rows": 138,
+                              "cost": 2.63e7,
+                              "chosen": false
+                            }
+                          ]
+                        },
+                        "condition_filtering_pct": 100,
+                        "rows_for_plan": 951264,
+                        "cost_for_plan": 2.3e6,
+                        "pruned_by_cost": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "attaching_conditions_to_tables": {
+              "original_condition": "((`tmp`.`cnt` = `list`.`cnt`) and (`tmp`.`position` = `list`.`position`) and (`champ`.`champion_id` = `list`.`champion_id`))",
+              "attached_conditions_computation": [
+              ],
+              "attached_conditions_summary": [
+                {
+                  "table": " `list`",
+                  "attached": null
+                },
+                {
+                  "table": "`champ`",
+                  "attached": null
+                },
+                {
+                  "table": " `tmp`",
+                  "attached": null
+                }
+              ]
+            }
+          },
+          {
+            "clause_processing": {
+              "clause": "ORDER BY",
+              "original_clause": "`list`.`position`",
+              "items": [
+                {
+                  "item": "`list`.`position`"
+                }
+              ],
+              "resulting_clause_is_simple": true,
+              "resulting_clause": "`list`.`position`"
+            }
+          },
+          {
+            "refine_plan": [
+              {
+                "table": " `list`"
+              },
+              {
+                "table": "`champ`"
+              },
+              {
+                "table": " `tmp`"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "join_execution": {
+        "select#": 1,
+        "steps": [
+          {
+            "creating_tmp_table": {
+              "tmp_table_info": {
+                "table": " `list`",
+                "row_length": 27,
+                "key_length": 0,
+                "unique_constraint": false,
+                "location": "memory (heap)",
+                "row_limit_estimate": 621378
+              }
+            }
+          },
+          {
+            "creating_tmp_table": {
+              "tmp_table_info": {
+                "table": " `tmp`",
+                "row_length": 23,
+                "key_length": 24,
+                "unique_constraint": false,
+                "location": "memory (heap)",
+                "row_limit_estimate": 729444
+              }
+            }
+          },
+          {
+            "join_execution": {
+              "select#": 3,
+              "steps": [
+                {
+                  "creating_tmp_table": {
+                    "tmp_table_info": {
+                      "table": "intermediate_tmp_table",
+                      "row_length": 27,
+                      "key_length": 19,
+                      "unique_constraint": false,
+                      "location": "memory (heap)",
+                      "row_limit_estimate": 621378
+                    }
+                  }
+                },
+                {
+                  "filesort_information": [
+                    {
+                      "direction": "desc",
+                      "table": "intermediate_tmp_table",
+                      "field": "cnt"
+                    }
+                  ],
+                  "filesort_priority_queue_optimization": {
+                    "usable": false,
+                    "cause": "not applicable (no LIMIT)"
+                  },
+                  "filesort_execution": [
+                  ],
+                  "filesort_summary": {
+                    "rows": 609,
+                    "examined_rows": 609,
+                    "number_of_tmp_files": 0,
+                    "sort_buffer_size": 14856,
+                    "sort_mode": "<sort_key, rowid>"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "filesort_information": [
+              {
+                "direction": "asc",
+                "table": " `list`",
+                "field": "position"
+              }
+            ],
+            "filesort_priority_queue_optimization": {
+              "usable": false,
+              "cause": "not applicable (no LIMIT)"
+            },
+            "filesort_execution": [
+            ],
+            "filesort_summary": {
+              "rows": 609,
+              "examined_rows": 609,
+              "number_of_tmp_files": 0,
+              "sort_buffer_size": 17952,
+              "sort_mode": "<sort_key, rowid>"
+            }
+          },
+          {
+            "join_execution": {
+              "select#": 6,
+              "steps": [
+                {
+                  "creating_tmp_table": {
+                    "tmp_table_info": {
+                      "table": " `grp_pos_champ`",
+                      "row_length": 27,
+                      "key_length": 0,
+                      "unique_constraint": false,
+                      "location": "memory (heap)",
+                      "row_limit_estimate": 621378
+                    }
+                  }
+                },
+                {
+                  "join_execution": {
+                    "select#": 7,
+                    "steps": [
+                      {
+                        "creating_tmp_table": {
+                          "tmp_table_info": {
+                            "table": "intermediate_tmp_table",
+                            "row_length": 27,
+                            "key_length": 19,
+                            "unique_constraint": false,
+                            "location": "memory (heap)",
+                            "row_limit_estimate": 621378
+                          }
+                        }
+                      },
+                      {
+                        "filesort_information": [
+                          {
+                            "direction": "desc",
+                            "table": "intermediate_tmp_table",
+                            "field": "cnt"
+                          }
+                        ],
+                        "filesort_priority_queue_optimization": {
+                          "usable": false,
+                          "cause": "not applicable (no LIMIT)"
+                        },
+                        "filesort_execution": [
+                        ],
+                        "filesort_summary": {
+                          "rows": 609,
+                          "examined_rows": 609,
+                          "number_of_tmp_files": 0,
+                          "sort_buffer_size": 14856,
+                          "sort_mode": "<sort_key, rowid>"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "creating_tmp_table": {
+                    "tmp_table_info": {
+                      "table": "intermediate_tmp_table",
+                      "row_length": 23,
+                      "key_length": 15,
+                      "unique_constraint": false,
+                      "location": "memory (heap)",
+                      "row_limit_estimate": 729444
+                    }
+                  }
+                },
+                {
+                  "filesort_information": [
+                    {
+                      "direction": "asc",
+                      "table": "intermediate_tmp_table",
+                      "field": "position"
+                    }
+                  ],
+                  "filesort_priority_queue_optimization": {
+                    "usable": false,
+                    "cause": "not applicable (no LIMIT)"
+                  },
+                  "filesort_execution": [
+                  ],
+                  "filesort_summary": {
+                    "rows": 5,
+                    "examined_rows": 5,
+                    "number_of_tmp_files": 0,
+                    "sort_buffer_size": 440,
+                    "sort_mode": "<sort_key, rowid>"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
